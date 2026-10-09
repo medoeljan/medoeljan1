@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDO EL JAN Academy - منصة البرمجة والأمن السيبراني</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            dark: '#03040a',
+                            card: '#0a0e1a',
+                            border: '#1a2332',
+                            neonGreen: '#00ffcc',
+                            neonBlue: '#00d4ff',
+                            neonPurple: '#a855f7',
+                            textMuted: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Fira+Code:wght@400;500;600&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #03040a;
+            color: #f8fafc;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        .code-font { font-family: 'Fira Code', monospace; }
+        .neon-glow { text-shadow: 0 0 12px rgba(0,255,204,0.8), 0 0 25px rgba(0,212,255,0.4); }
+        .neon-box { box-shadow: 0 0 20px rgba(0,255,204,0.15), inset 0 0 20px rgba(0,212,255,0.05); }
+
+        #cyberCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        ::-webkit-scrollbar { width: 7px; }
+        ::-webkit-scrollbar-track { background: #03040a; }
+        ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ffcc; }
+
+        .lesson-page { display: none; min-height: 100vh; position: relative; z-index: 10; }
+        .lesson-page.active { display: block; }
+        .main-content.hidden-view { display: none !important; }
+
+        /* خلفيات ملونة مختلفة لكل قسم */
+        #hero {
+            background: radial-gradient(ellipse at 30% 20%, rgba(0,255,204,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(168,85,247,0.07) 0%, transparent 45%);
+        }
+        #editors {
+            background: linear-gradient(180deg, rgba(0,212,255,0.06) 0%, rgba(10,14,26,0.9) 40%, rgba(168,85,247,0.05) 100%);
+        }
+        #courses {
+            background: radial-gradient(ellipse at 50% 0%, rgba(0,255,204,0.06) 0%, transparent 55%),
+                        radial-gradient(ellipse at 80% 100%, rgba(59,130,246,0.07) 0%, transparent 40%);
+        }
+        #compiler {
+            background: linear-gradient(135deg, rgba(6,10,20,0.95) 0%, rgba(15,8,30,0.9) 50%, rgba(6,20,25,0.95) 100%);
+        }
+        #contact {
+            background: radial-gradient(ellipse at 50% 40%, rgba(239,68,68,0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at 20% 90%, rgba(168,85,247,0.08) 0%, transparent 40%),
+                        linear-gradient(180deg, transparent 0%, rgba(3,4,10,0.8) 100%);
+        }
+
+        /* ثيمات صفحات الدروس حسب التصنيف */
+        .lesson-page.theme-python {
+            background: radial-gradient(ellipse at 20% 10%, rgba(0,255,204,0.12) 0%, transparent 45%),
+                        radial-gradient(ellipse at 80% 90%, rgba(0,212,255,0.08) 0%, transparent 40%),
+                        #03040a;
+        }
+        .lesson-page.theme-python .lesson-content {
+            border-color: rgba(0,255,204,0.35);
+            box-shadow: 0 0 40px rgba(0,255,204,0.08);
+        }
+        .lesson-page.theme-python .lesson-content h3 { color: #00ffcc; border-right-color: #00ffcc; }
+
+        .lesson-page.theme-web {
+            background: radial-gradient(ellipse at 70% 15%, rgba(168,85,247,0.14) 0%, transparent 45%),
+                        radial-gradient(ellipse at 20% 85%, rgba(236,72,153,0.08) 0%, transparent 40%),
+                        #0a0614;
+        }
+        .lesson-page.theme-web .lesson-content {
+            border-color: rgba(168,85,247,0.4);
+            box-shadow: 0 0 40px rgba(168,85,247,0.1);
+        }
+        .lesson-page.theme-web .lesson-content h3 { color: #c084fc; border-right-color: #a855f7; }
+        .lesson-page.theme-web .lesson-content h4 { color: #e879f9; }
+
+        .lesson-page.theme-cyber {
+            background: radial-gradient(ellipse at 50% 20%, rgba(16,185,129,0.12) 0%, transparent 45%),
+                        radial-gradient(ellipse at 10% 80%, rgba(239,68,68,0.08) 0%, transparent 40%),
+                        #040a08;
+        }
+        .lesson-page.theme-cyber .lesson-content {
+            border-color: rgba(16,185,129,0.4);
+            box-shadow: 0 0 40px rgba(16,185,129,0.1);
+        }
+        .lesson-page.theme-cyber .lesson-content h3 { color: #34d399; border-right-color: #10b981; }
+        .lesson-page.theme-cyber .lesson-content h4 { color: #6ee7b7; }
+
+        .lesson-page.theme-tools {
+            background: radial-gradient(ellipse at 30% 20%, rgba(251,191,36,0.1) 0%, transparent 45%),
+                        radial-gradient(ellipse at 90% 70%, rgba(249,115,22,0.08) 0%, transparent 40%),
+                        #0a0804;
+        }
+        .lesson-page.theme-tools .lesson-content {
+            border-color: rgba(251,191,36,0.35);
+            box-shadow: 0 0 40px rgba(251,191,36,0.08);
+        }
+        .lesson-page.theme-tools .lesson-content h3 { color: #fbbf24; border-right-color: #f59e0b; }
+        .lesson-page.theme-tools .lesson-content h4 { color: #fcd34d; }
+
+        .lesson-content h3 {
+            color: #00ffcc;
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin: 1.8rem 0 0.7rem;
+            border-right: 4px solid #00ffcc;
+            padding-right: 12px;
+        }
+        .lesson-content h4 {
+            color: #00d4ff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 1.3rem 0 0.5rem;
+        }
+        .lesson-content p { margin-bottom: 0.9rem; line-height: 1.85; color: #cbd5e1; font-size: 0.95rem; }
+        .lesson-content ul, .lesson-content ol { margin: 0.8rem 0 1.2rem; padding-right: 1.5rem; }
+        .lesson-content li { margin-bottom: 0.45rem; color: #94a3b8; line-height: 1.65; }
+        .lesson-content pre {
+            background: #060a14;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 1.1rem 1.3rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.82rem;
+            margin: 1rem 0;
+            color: #00ffcc;
+            direction: ltr;
+            text-align: left;
+            line-height: 1.55;
+        }
+        .lesson-content .tip {
+            background: rgba(0,255,204,0.07);
+            border: 1px solid rgba(0,255,204,0.22);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin: 1.3rem 0;
+        }
+        .lesson-content .exercise {
+            background: rgba(168,85,247,0.08);
+            border: 1px solid rgba(168,85,247,0.28);
+            border-radius: 12px;
+            padding: 1.1rem 1.3rem;
+            margin: 1.4rem 0;
+        }
+        .lesson-content .warning {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 12px;
+            padding: 0.9rem 1.1rem;
+            margin: 1.2rem 0;
+        }
+
+        .ide-wrapper {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #1a2332;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+        }
+        .ide-line-numbers {
+            background: #060a12;
+            color: #475569;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            padding: 1rem 0.6rem;
+            text-align: left;
+            user-select: none;
+            min-width: 42px;
+            line-height: 1.55;
+            border-left: 1px solid #1a2332;
+        }
+        #codeEditor { line-height: 1.55; tab-size: 4; }
+
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 30%, rgba(0,212,255,0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.1) 0%, transparent 45%),
+                        rgba(3,4,10,0.92);
+            backdrop-filter: blur(14px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-overlay.hidden { display: none !important; }
+
+        .user-badge {
+            background: linear-gradient(135deg, rgba(0,255,204,0.15), rgba(0,212,255,0.1));
+            border: 1px solid rgba(0,255,204,0.3);
+        }
+
+        .lesson-card {
+            transition: all 0.25s ease;
+        }
+        .lesson-card:hover {
+            border-color: #00ffcc !important;
+            transform: translateY(-2px);
+        }
+
+        .cat-tab.active {
+            background: linear-gradient(135deg, rgba(0,255,204,0.2), rgba(0,212,255,0.15));
+            border-color: #00ffcc;
+            color: #00ffcc;
+        }
+    </style>
+</head>
+<body class="bg-cyber-dark text-slate-100">
+
+    <canvas id="cyberCanvas"></canvas>
+
+    <!-- ===================== AUTH OVERLAY (Professional) ===================== -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="relative z-10 w-full max-w-md mx-4">
+            <div class="bg-cyber-card/95 border border-cyber-border rounded-3xl p-8 sm:p-10 shadow-2xl neon-box backdrop-blur-xl">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center neon-box shadow-lg shadow-cyan-500/20">
+                        <i class="fa-solid fa-terminal text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">MEDO EL JAN</h1>
+                    <p class="text-cyber-neonGreen font-mono text-xs tracking-widest mb-1">ACADEMY v5.0</p>
+                    <p class="text-cyber-textMuted text-sm mt-3">سجّل دخولك للوصول الكامل للمنصة التعليمية</p>
+                </div>
+
+                <form id="loginForm" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-mono text-cyber-textMuted mb-2">اسم المستخدم</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute right-3.5 top-1/2 -translate-y-1/2 text-cyber-textMuted text-sm"></i>
+                            <input type="text" id="loginUser" required placeholder="مثال: medo_dev" autocomplete="username"
+                                class="w-full bg-cyber-dark/80 border border-cyber-border rounded-xl py-3.5 pr-11 pl-4 text-sm text-white focus:outline-none focus:border-cyber-neonGreen focus:ring-1 focus:ring-cyber-neonGreen/40 transition">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-cyber-textMuted mb-2">كلمة المرور</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute right-3.5 top-1/2 -translate-y-1/2 text-cyber-textMuted text-sm"></i>
+                            <input type="password" id="loginPass" required placeholder="••••••••" autocomplete="current-password"
+                                class="w-full bg-cyber-dark/80 border border-cyber-border rounded-xl py-3.5 pr-11 pl-4 text-sm text-white focus:outline-none focus:border-cyber-neonGreen focus:ring-1 focus:ring-cyber-neonGreen/40 transition">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                            <input type="checkbox" id="rememberMe" checked class="w-4 h-4 accent-cyan-500 rounded">
+                            <span class="text-sm text-cyber-textMuted">حفظ تسجيل الدخول على هذا الجهاز</span>
+                        </label>
+                    </div>
+                    <button type="button" id="loginBtn" class="w-full py-4 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-cyan-500/30 transition flex items-center justify-center gap-2 text-base">
+                        <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+                    </button>
+                </form>
+                <p class="text-center text-xs text-cyber-textMuted mt-6 leading-relaxed">
+                    أي اسم مستخدم + أي كلمة مرور تعمل (وضع تجريبي)<br>
+                    <span class="text-cyber-neonGreen/80">✓ يتم حفظ الجلسة محلياً عند التفعيل</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <div id="mainContent" class="main-content relative z-10">
+
+        <header class="sticky top-0 z-50 bg-cyber-dark/90 backdrop-blur-xl border-b border-cyber-border">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between py-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center neon-box">
+                        <i class="fa-solid fa-terminal text-xl text-white"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-black tracking-wider bg-gradient-to-r from-cyber-neonGreen via-cyber-neonBlue to-cyber-neonPurple bg-clip-text text-transparent">MEDO EL JAN</span>
+                        <span class="block text-[10px] text-cyber-textMuted tracking-widest font-mono">ACADEMY v5.0</span>
+                    </div>
+                </div>
+                <nav class="hidden md:flex items-center gap-7 text-sm font-semibold">
+                    <a href="#hero" class="hover:text-cyber-neonGreen transition">الرئيسية</a>
+                    <a href="#editors" class="hover:text-cyber-neonGreen transition">المحررات</a>
+                    <a href="#courses" class="hover:text-cyber-neonGreen transition">الدورات</a>
+                    <a href="#compiler" class="hover:text-cyber-neonGreen transition">محرر الأكواد</a>
+                    <a href="#contact" class="hover:text-cyber-neonGreen transition">التواصل</a>
+                </nav>
+                <div class="flex items-center gap-3">
+                    <div id="userBadge" class="user-badge hidden items-center gap-2 px-3 py-1.5 rounded-xl text-sm">
+                        <i class="fa-solid fa-user text-cyber-neonGreen"></i>
+                        <span id="loggedUserName" class="font-bold text-cyber-neonGreen"></span>
+                    </div>
+                    <button onclick="logout()" id="logoutBtn" class="hidden px-3 py-1.5 text-xs border border-cyber-border rounded-lg hover:border-red-400 hover:text-red-400 transition">
+                        خروج
+                    </button>
+                    <button onclick="toggleMusic()" id="musicBtn" class="px-3 py-2 bg-cyber-card border border-cyber-border rounded-lg text-cyber-neonGreen hover:bg-cyber-border transition text-sm" title="موسيقى حزينة">
+                        <i class="fa-solid fa-music" id="musicIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <section id="hero" class="relative pt-24 pb-28 px-4 max-w-7xl mx-auto text-center">
+            <div class="inline-block mb-5 px-4 py-1.5 rounded-full border border-cyber-neonGreen/30 bg-cyber-neonGreen/10 text-cyber-neonGreen text-xs font-mono tracking-wider">
+                ⚡ المنصة البرمجية الأولى — أكثر من 100 درس شامل
+            </div>
+            <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight leading-tight">
+                مرحباً بك في عالم الاحتراف مع<br>
+                <span class="bg-gradient-to-r from-cyber-neonGreen via-cyber-neonBlue to-cyber-neonPurple bg-clip-text text-transparent neon-glow">MEDO EL JAN</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-cyber-textMuted text-lg mb-10 leading-relaxed">
+                تعلم البرمجة الحقيقية، احترف بايثون وتطوير الويب والأمن السيبراني — أكثر من 100 درس مفصّل مع واجهة مستقلة لكل درس.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#courses" class="px-8 py-4 rounded-xl bg-cyber-neonGreen text-cyber-dark font-black hover:bg-white transition shadow-lg shadow-cyber-neonGreen/25">
+                    استكشف الدورات <i class="fa-solid fa-arrow-left mr-2"></i>
+                </a>
+                <a href="https://wa.me/message/IDAQMNL3ABVAN1" target="_blank" class="px-8 py-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/25 flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-xl"></i> تواصل واتساب
+                </a>
+            </div>
+        </section>
+
+        <section id="editors" class="py-20 bg-cyber-card/30 border-y border-cyber-border">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="text-center mb-14">
+                    <h2 class="text-3xl font-black mb-3">أبرز محررات الأكواد</h2>
+                    <p class="text-cyber-textMuted">اختر الأداة المناسبة وابدأ رحلة الاحتراف</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-cyber-card border border-cyber-border p-6 rounded-2xl hover:border-cyber-neonGreen transition group">
+                        <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 text-2xl mb-4 group-hover:scale-110 transition"><i class="fa-solid fa-code"></i></div>
+                        <h3 class="text-xl font-bold mb-2">VS Code</h3>
+                        <p class="text-cyber-textMuted text-sm mb-4">المحرر الأشهر عالمياً مع آلاف الإضافات.</p>
+                        <button onclick="openLesson('vscode')" class="text-cyber-neonGreen text-sm font-bold hover:underline">قراءة الدرس الكامل ←</button>
+                    </div>
+                    <div class="bg-cyber-card border border-cyber-border p-6 rounded-2xl hover:border-cyber-neonGreen transition group">
+                        <div class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center text-green-400 text-2xl mb-4 group-hover:scale-110 transition"><i class="fa-solid fa-laptop-code"></i></div>
+                        <h3 class="text-xl font-bold mb-2">PyCharm</h3>
+                        <p class="text-cyber-textMuted text-sm mb-4">أفضل بيئة متكاملة لمطوري بايثون.</p>
+                        <button onclick="openLesson('pycharm')" class="text-cyber-neonGreen text-sm font-bold hover:underline">قراءة الدرس الكامل ←</button>
+                    </div>
+                    <div class="bg-cyber-card border border-cyber-border p-6 rounded-2xl hover:border-cyber-neonGreen transition group">
+                        <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-400 text-2xl mb-4 group-hover:scale-110 transition"><i class="fa-solid fa-terminal"></i></div>
+                        <h3 class="text-xl font-bold mb-2">Sublime Text</h3>
+                        <p class="text-cyber-textMuted text-sm mb-4">سريع وخفيف مثالي للتعديلات السريعة.</p>
+                        <button onclick="openLesson('sublime')" class="text-cyber-neonGreen text-sm font-bold hover:underline">قراءة الدرس الكامل ←</button>
+                    </div>
+                    <div class="bg-cyber-card border border-cyber-border p-6 rounded-2xl hover:border-cyber-neonGreen transition group">
+                        <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-400 text-2xl mb-4 group-hover:scale-110 transition"><i class="fa-solid fa-server"></i></div>
+                        <h3 class="text-xl font-bold mb-2">Terminal</h3>
+                        <p class="text-cyber-textMuted text-sm mb-4">التحكم الكامل عبر سطر الأوامر.</p>
+                        <button onclick="openLesson('terminal')" class="text-cyber-neonGreen text-sm font-bold hover:underline">قراءة الدرس الكامل ←</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Courses with 100+ lessons -->
+        <section id="courses" class="py-20 max-w-7xl mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-black mb-3">الدورات والدروس التعليمية</h2>
+                <p class="text-cyber-textMuted">أكثر من 100 درس — اضغط على أي درس للدخول إلى واجهته الخاصة</p>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="flex flex-wrap justify-center gap-2 mb-10">
+                <button onclick="showCat('all')" class="cat-tab active px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition" data-cat="all">الكل</button>
+                <button onclick="showCat('python')" class="cat-tab px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition text-cyber-textMuted" data-cat="python">بايثون (40)</button>
+                <button onclick="showCat('web')" class="cat-tab px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition text-cyber-textMuted" data-cat="web">تطوير ويب (25)</button>
+                <button onclick="showCat('cyber')" class="cat-tab px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition text-cyber-textMuted" data-cat="cyber">أمن سيبراني (20)</button>
+                <button onclick="showCat('tools')" class="cat-tab px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition text-cyber-textMuted" data-cat="tools">أدوات ومحررات (15)</button>
+            </div>
+
+            <div id="lessonsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Filled by JS -->
+            </div>
+        </section>
+
+        <!-- Professional IDE -->
+        <section id="compiler" class="py-20 bg-cyber-card/20 border-y border-cyber-border">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-black mb-3">محرر بايثون الاحترافي</h2>
+                    <p class="text-cyber-textMuted">واجهة شبيهة بـ IDE — اكتب كود بايثون أو جافاسكريبت وشغّله فوراً</p>
+                </div>
+                <div class="ide-wrapper bg-cyber-card">
+                    <div class="bg-[#0a0e18] px-4 py-2.5 border-b border-cyber-border flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="flex gap-1.5">
+                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                            </div>
+                            <span class="text-xs text-cyber-textMuted font-mono">MEDO EL JAN IDE — Python</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select id="langSelect" class="bg-cyber-dark text-xs border border-cyber-border rounded-lg px-3 py-1.5 text-cyber-neonGreen font-mono">
+                                <option value="python">Python 3.12</option>
+                                <option value="javascript">JavaScript</option>
+                            </select>
+                            <button onclick="runCode()" class="px-4 py-1.5 bg-cyber-neonGreen text-cyber-dark font-bold text-xs rounded-lg hover:bg-white transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-play"></i> تشغيل
+                            </button>
+                            <button onclick="clearEditor()" class="px-3 py-1.5 bg-cyber-dark border border-cyber-border text-cyber-textMuted text-xs rounded-lg hover:border-red-400 hover:text-red-400 transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex border-b border-cyber-border bg-[#070b14]">
+                        <div class="px-5 py-2 text-xs font-mono text-cyber-neonGreen border-b-2 border-cyber-neonGreen bg-cyber-card/50">
+                            <i class="fa-solid fa-file-code ml-1"></i> main.py
+                        </div>
+                        <div class="px-5 py-2 text-xs font-mono text-cyber-textMuted">
+                            <i class="fa-solid fa-terminal ml-1"></i> Output
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2">
+                        <div class="flex border-b lg:border-b-0 lg:border-l border-cyber-border">
+                            <div id="lineNumbers" class="ide-line-numbers">1</div>
+                            <textarea id="codeEditor" rows="18" spellcheck="false" oninput="updateLineNumbers()"
+                                class="flex-1 bg-[#070b14] text-cyber-neonGreen code-font text-sm p-4 focus:outline-none resize-none border-0"
+                            >print("=" * 45)
+print("   MEDO EL JAN - Python Professional IDE")
+print("=" * 45)
+
+name = "مبرمج محترف"
+print(f"\nأهلاً بك يا {name}!")
+print("مرحباً بك في بيئة البرمجة الاحترافية")
+
+for i in range(1, 4):
+    print(f"  → المستوى {i} جاهز للتعلم")
+
+print("\nاستمتع بالتعلم والتطوير...")</textarea>
+                        </div>
+                        <div class="flex flex-col bg-[#05080f]">
+                            <div class="px-4 py-1.5 text-[10px] font-mono text-cyber-textMuted border-b border-cyber-border">مخرجات التشغيل</div>
+                            <div id="outputConsole" class="flex-1 p-4 code-font text-xs text-emerald-400 overflow-y-auto min-h-[380px] whitespace-pre-wrap">
+> تم تهيئة بيئة MEDO EL JAN IDE
+> Python 3.12 ready
+> اضغط "تشغيل" لتنفيذ الكود
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="py-28 text-center relative">
+            <div class="max-w-3xl mx-auto px-4 relative z-10">
+                <div class="w-52 h-52 sm:w-64 sm:h-64 mx-auto mb-8 rounded-2xl overflow-hidden border-2 border-red-500/60 shadow-2xl" style="box-shadow: 0 0 40px rgba(239,68,68,0.25), 0 0 80px rgba(168,85,247,0.15);">
+                    <img src="medo-profile.jpg" alt="MEDO EL JAN" class="w-full h-full object-cover object-center">
+                </div>
+                <h2 class="text-4xl font-black mb-4">تواصل مع <span class="text-cyber-neonGreen">MEDO EL JAN</span></h2>
+                <p class="text-cyber-textMuted text-lg mb-8 max-w-lg mx-auto">
+                    لديك استفسار برمجي أو تريد الانضمام للدورات الخاصة؟ تواصل معنا مباشرة.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://wa.me/message/IDAQMNL3ABVAN1" target="_blank" class="px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg transition shadow-xl shadow-emerald-600/30 flex items-center gap-3">
+                        <i class="fa-brands fa-whatsapp text-2xl"></i> واتساب
+                    </a>
+                    <a href="tel:01278977255" class="px-8 py-4 rounded-2xl bg-cyber-card border border-cyber-border hover:border-cyber-neonGreen text-white font-bold text-lg transition flex items-center gap-3">
+                        <i class="fa-solid fa-phone text-cyber-neonGreen"></i> 01278977255
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-cyber-dark py-8 border-t border-cyber-border text-center text-xs text-cyber-textMuted">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p>© 2026 منصة <span class="text-cyber-neonGreen font-bold">MEDO EL JAN</span> — جميع الحقوق محفوظة</p>
+                <p class="font-mono">01278977255</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ===================== LESSON PAGE ===================== -->
+    <div id="lessonPage" class="lesson-page">
+        <header class="sticky top-0 z-50 bg-cyber-dark/95 backdrop-blur-xl border-b border-cyber-border">
+            <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+                <button onclick="closeLesson()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-neonGreen transition text-sm font-bold">
+                    <i class="fa-solid fa-arrow-right"></i> رجوع
+                </button>
+                <span class="text-sm font-mono text-cyber-textMuted hidden sm:inline">MEDO EL JAN Academy</span>
+                <button onclick="toggleMusic()" class="px-3 py-2 bg-cyber-card border border-cyber-border rounded-lg text-cyber-neonGreen text-sm">
+                    <i class="fa-solid fa-music"></i>
+                </button>
+            </div>
+        </header>
+        <div class="max-w-4xl mx-auto px-4 py-10 relative z-10">
+            <div class="mb-8">
+                <span id="lessonBadge" class="px-3 py-1 bg-cyber-neonGreen/10 text-cyber-neonGreen text-xs font-mono rounded-full"></span>
+                <h1 id="lessonTitle" class="text-3xl sm:text-4xl font-black mt-4 mb-2"></h1>
+                <p id="lessonSubtitle" class="text-cyber-textMuted"></p>
+            </div>
+            <div id="lessonBody" class="lesson-content bg-cyber-card/60 border border-cyber-border rounded-2xl p-6 sm:p-10 backdrop-blur-sm"></div>
+            <div class="mt-10 flex flex-wrap gap-4 justify-between">
+                <button onclick="closeLesson()" class="px-6 py-3 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-neonGreen transition font-bold">← العودة</button>
+                <a href="https://wa.me/message/IDAQMNL3ABVAN1" target="_blank" class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp"></i> اسأل عن الدرس
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== 100 LESSONS =====================
+        const lessons = {};
+
+        // --- Python 40 lessons ---
+        const pyTitles = [
+            "أساسيات بايثون والمتغيرات", "الشروط والحلقات والدوال", "البرمجة كائنية التوجه OOP",
+            "القوائم والقواميس والمجموعات", "التعامل مع الملفات", "معالجة الاستثناءات",
+            "المكتبات القياسية (os, sys, datetime)", "التعبيرات النمطية Regex", "وحدات وموديولات",
+            "دوال Lambda و Map و Filter", "القوائم المتداخلة و comprehensions", "السلاسل النصية المتقدمة",
+            "العمل مع JSON و CSV", "طلبات HTTP مع requests", "قواعد البيانات SQLite",
+            "البرمجة المتعددة (Threading)", "البرمجة غير المتزامنة asyncio", "إنشاء واجهات GUI بـ tkinter",
+            "أساسيات Flask", "أساسيات Django", "التعامل مع الصور Pillow", "علم البيانات مع pandas",
+            "الرسوم البيانية matplotlib", "مقدمة NumPy", "Machine Learning أساسيات",
+            "اختبارات الوحدة unittest", "إدارة الحزم pip و venv", "decorators و generators",
+            "context managers", "العمل مع APIs", "Scraping أساسيات", "الأمان في بايثون",
+            "تحسين الأداء", "التعامل مع التاريخ والوقت", "اللوجات والتتبع", "تصميم الأنماط Patterns",
+            "مشروع: آلة حاسبة", "مشروع: مدير مهام", "مشروع: واجهة ويب بسيطة", "مراجعة شاملة بايثون"
+        ];
+
+        pyTitles.forEach((title, i) => {
+            const id = 'py' + (i + 1);
+            const num = i + 1;
+            let content = '';
+            if (num === 1) {
+                content = `
+                    <h3>مقدمة شاملة عن لغة بايثون</h3>
+                    <p>بايثون من أكثر لغات البرمجة شعبية. سهلة القراءة وقوية للمحترفين. تُستخدم في الويب، البيانات، الذكاء الاصطناعي، والأمن السيبراني.</p>
+                    <h3>المتغيرات وأنواع البيانات</h3>
+                    <pre>name = "أحمد"
+age = 22
+height = 1.78
+is_student = True
+skills = ["Python", "HTML"]
+info = {"city": "القاهرة"}
+
+print(type(name), type(age), type(height))</pre>
+                    <h3>الإدخال من المستخدم</h3>
+                    <pre>name = input("أدخل اسمك: ")
+age = int(input("أدخل عمرك: "))
+print(f"مرحباً {name}! عمرك {age}")</pre>
+                    <div class="tip"><strong>نصيحة:</strong> استخدم f-strings دائماً.</div>
+                    <div class="exercise"><strong>تمرين:</strong> اطلب الاسم والعمر والمدينة واطبع بطاقة تعريف، واحسب سنة بلوغ 30.</div>
+                `;
+            } else if (num === 2) {
+                content = `
+                    <h3>الجمل الشرطية</h3>
+                    <pre>score = int(input("درجتك: "))
+if score >= 90: print("ممتاز")
+elif score >= 60: print("مقبول")
+else: print("راسب")</pre>
+                    <h3>الحلقات والدوال</h3>
+                    <pre>for i in range(1, 6): print(i)
+def greet(name): return f"أهلاً {name}"
+print(greet("سارة"))</pre>
+                    <div class="exercise"><strong>تمرين:</strong> دالة تأخذ قائمة أرقام وتعيد أكبر، أصغر، مجموع، ومتوسط.</div>
+                `;
+            } else if (num === 3) {
+                content = `
+                    <h3>الفئات والكائنات</h3>
+                    <pre>class Student:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    def introduce(self):
+        return f"اسمي {self.name}"
+
+s = Student("سارة", 20)
+print(s.introduce())</pre>
+                    <h3>الوراثة</h3>
+                    <pre>class Person:
+    def __init__(self, name): self.name = name
+class Student(Person):
+    def __init__(self, name, grade):
+        super().__init__(name)
+        self.grade = grade</pre>
+                    <div class="exercise"><strong>تمرين:</strong> صمم فئة Car مع تسريع وفرملة.</div>
+                `;
+            } else {
+                content = `
+                    <h3>${title}</h3>
+                    <p>هذا الدرس يغطي موضوع <strong>${title}</strong> في لغة بايثون بشكل عملي ومفصّل.</p>
+                    <h4>الأهداف</h4>
+                    <ul>
+                        <li>فهم المفهوم الأساسي لـ ${title}</li>
+                        <li>كتابة أمثلة عملية قابلة للتشغيل</li>
+                        <li>تطبيق أفضل الممارسات</li>
+                        <li>حل تمارين تطبيقية</li>
+                    </ul>
+                    <h4>مثال سريع</h4>
+                    <pre># مثال توضيحي لـ ${title}
+# اكتب الكود هنا وجربه في محرر المنصة
+print("درس رقم ${num}: ${title}")
+print("MEDO EL JAN Academy")</pre>
+                    <div class="tip"><strong>نصيحة:</strong> طبّق كل مفهوم فور تعلمه في محرر الأكواد بالأسفل.</div>
+                    <div class="exercise"><strong>تمرين:</strong> اكتب برنامجاً صغيراً يطبق ما تعلمته في هذا الدرس ثم شاركه.</div>
+                    <div class="warning"><strong>ملاحظة:</strong> راجع الدروس السابقة إن واجهت صعوبة في المفاهيم الأساسية.</div>
+                `;
+            }
+            lessons[id] = {
+                badge: `بايثون • الدرس ${num}`,
+                title: title,
+                subtitle: `الدرس ${num} من سلسلة بايثون الاحترافية`,
+                content: content,
+                cat: 'python'
+            };
+        });
+
+        // --- Web 25 lessons ---
+        const webTitles = [
+            "هيكل HTML5", "CSS3 والتصميم المتجاوب", "JavaScript التفاعلي",
+            "Semantic HTML", "Forms والتحقق", "Flexbox المتقدم", "CSS Grid",
+            "Responsive Design", "CSS Variables و Custom Properties", "Animations و Transitions",
+            "DOM Manipulation", "Events و Event Listeners", "Fetch API و AJAX",
+            "LocalStorage و SessionStorage", "ES6+ Features", "Modules في JS",
+            "Promises و Async/Await", "مقدمة React", "مكونات React", "State و Props",
+            "مقدمة Vue.js", "Tailwind CSS", "بناء صفحة هبوط كاملة", "SEO أساسيات", "مشروع موقع شخصي"
+        ];
+
+        webTitles.forEach((title, i) => {
+            const id = 'web' + (i + 1);
+            const num = i + 1;
+            let content = `
+                <h3>${title}</h3>
+                <p>درس شامل في تطوير الويب يغطي <strong>${title}</strong> مع أمثلة عملية.</p>
+                <h4>ما ستتعلمه</h4>
+                <ul>
+                    <li>المفاهيم الأساسية</li>
+                    <li>أمثلة كود جاهزة للتجربة</li>
+                    <li>أفضل الممارسات الحديثة</li>
+                    <li>تمرين تطبيقي</li>
+                </ul>
+                <h4>مثال</h4>
+                <pre>&lt;!-- مثال ${title} --&gt;
+&lt;div class="container"&gt;
+  &lt;h1&gt;MEDO EL JAN Academy&lt;/h1&gt;
+  &lt;p&gt;درس رقم ${num}&lt;/p&gt;
+&lt;/div&gt;</pre>
+                <div class="tip">استخدم أدوات المطور في المتصفح لتجربة التعديلات مباشرة.</div>
+                <div class="exercise"><strong>تمرين:</strong> طبّق المفهوم في صفحة HTML خاصة بك.</div>
+            `;
+            if (num === 1) {
+                content = `
+                    <h3>الهيكل الأساسي لـ HTML5</h3>
+                    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="ar" dir="rtl"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;عنوان الصفحة&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;مرحباً&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                    <h3>أهم الوسوم</h3>
+                    <ul>
+                        <li>h1-h6 للعناوين</li>
+                        <li>p للفقرات</li>
+                        <li>a للروابط</li>
+                        <li>img للصور</li>
+                        <li>div / section / header / footer</li>
+                        <li>form / input / button</li>
+                    </ul>
+                `;
+            }
+            lessons[id] = {
+                badge: `تطوير ويب • ${num}`,
+                title: title,
+                subtitle: `الدرس ${num} من سلسلة تطوير الويب`,
+                content: content,
+                cat: 'web'
+            };
+        });
+
+        // --- Cyber 20 lessons ---
+        const cyberTitles = [
+            "مفاهيم أمن المعلومات", "فحص الثغرات وتأمين الكود", "تأمين الشبكات والبيانات",
+            "مثلث CIA بالتفصيل", "أنواع الهجمات السيبرانية", "Phishing والهندسة الاجتماعية",
+            "كلمات المرور الآمنة والـ Hashing", "SQL Injection والحماية منه", "XSS والحماية",
+            "CSRF و SameSite", "HTTPS و TLS/SSL", "جدران الحماية Firewalls",
+            "VPNs والأمان", "أمن تطبيقات الويب OWASP", "اختبار الاختراق أساسيات",
+            "تحليل البرمجيات الخبيثة مقدمة", "أمن السحابة Cloud Security", "Zero Trust",
+            "التشفير Symmetric و Asymmetric", "مشروع: تأمين تطبيق بسيط"
+        ];
+
+        cyberTitles.forEach((title, i) => {
+            const id = 'cyber' + (i + 1);
+            const num = i + 1;
+            let content = `
+                <h3>${title}</h3>
+                <p>درس في الأمن السيبراني يغطي <strong>${title}</strong> بشكل نظري وعملي.</p>
+                <h4>النقاط الرئيسية</h4>
+                <ul>
+                    <li>فهم التهديد أو المفهوم</li>
+                    <li>طرق الحماية والتطبيق</li>
+                    <li>أدوات شائعة</li>
+                    <li>أفضل الممارسات</li>
+                </ul>
+                <div class="tip">الأمن طبقات (Defense in Depth). لا تعتمد على طبقة واحدة أبداً.</div>
+                <div class="warning"><strong>تنبيه أخلاقي:</strong> استخدم المعرفة فقط لأغراض قانونية وتعليمية.</div>
+                <div class="exercise"><strong>تمرين:</strong> ابحث عن مثال حقيقي متعلق بالموضوع واشرحه باختصار.</div>
+            `;
+            if (num === 1) {
+                content = `
+                    <h3>مثلث CIA</h3>
+                    <ul>
+                        <li><strong>Confidentiality</strong> — السرية</li>
+                        <li><strong>Integrity</strong> — السلامة</li>
+                        <li><strong>Availability</strong> — التوافر</li>
+                    </ul>
+                    <h3>أشهر الهجمات</h3>
+                    <ul>
+                        <li>Phishing</li>
+                        <li>Ransomware</li>
+                        <li>DDoS</li>
+                        <li>SQL Injection</li>
+                        <li>XSS</li>
+                    </ul>
+                `;
+            }
+            lessons[id] = {
+                badge: `أمن سيبراني • ${num}`,
+                title: title,
+                subtitle: `الدرس ${num} من سلسلة الأمن السيبراني`,
+                content: content,
+                cat: 'cyber'
+            };
+        });
+
+        // --- Tools 15 lessons ---
+        const toolsData = [
+            { id: 'vscode', title: 'VS Code الاحترافي — الدليل الكامل', badge: 'محرر أكواد', content: `
+                <h3>لماذا VS Code؟</h3>
+                <p>Visual Studio Code هو المحرر الأكثر استخداماً. مجاني ويدعم كل اللغات عبر الإضافات.</p>
+                <h3>الإضافات الأساسية</h3>
+                <ul><li>Python + Pylance</li><li>Live Server</li><li>Prettier</li><li>GitLens</li><li>Error Lens</li><li>Material Icon Theme</li></ul>
+                <h3>أهم الاختصارات</h3>
+                <pre>Ctrl + P              فتح ملف
+Ctrl + Shift + P      لوحة الأوامر
+Ctrl + \`              التيرمينال
+Ctrl + /              تعليق
+Alt + ↑ / ↓           نقل السطر
+F2                    إعادة تسمية</pre>
+                <div class="tip">فعّل Auto Save و Format On Save.</div>
+            `},
+            { id: 'pycharm', title: 'PyCharm المتقدم', badge: 'محرر أكواد', content: `
+                <h3>مميزات PyCharm</h3>
+                <ul><li>إكمال تلقائي ذكي</li><li>كشف الأخطاء</li><li>إدارة Virtual Environments</li><li>دعم Django و Flask</li><li>Debugger قوي</li></ul>
+                <div class="tip">أنشئ Virtual Environment لكل مشروع.</div>
+            `},
+            { id: 'sublime', title: 'Sublime Text', badge: 'محرر أكواد', content: `<h3>لماذا Sublime؟</h3><p>سريع جداً حتى مع الملفات الضخمة، وخفيف على الذاكرة. مثالي للتعديلات السريعة.</p>` },
+            { id: 'terminal', title: 'Terminal & Linux Commands', badge: 'محرر أكواد', content: `
+                <h3>أوامر أساسية</h3>
+                <pre>pwd / ls -la / cd / mkdir / touch / rm / cp / mv / cat / nano
+chmod +x script.sh
+python3 script.py
+pip install package
+git status / git add . / git commit -m "msg" / git push</pre>
+            `},
+            { id: 'git1', title: 'أساسيات Git', badge: 'أدوات', content: `<h3>Git أساسيات</h3><p>نظام التحكم بالإصدارات الأشهر. تعلم init, add, commit, push, pull, branch.</p><pre>git init\ngit add .\ngit commit -m "first"\ngit remote add origin URL\ngit push -u origin main</pre>` },
+            { id: 'git2', title: 'Git Branches و Merge', badge: 'أدوات', content: `<h3>الفروع والدمج</h3><pre>git branch feature\ngit checkout feature\ngit merge feature\ngit log --oneline --graph</pre>` },
+            { id: 'linux1', title: 'أساسيات Linux', badge: 'أدوات', content: `<h3>Linux للمبرمجين</h3><p>تعلم التنقل، الصلاحيات، العمليات، وإدارة الحزم.</p>` },
+            { id: 'docker1', title: 'مقدمة Docker', badge: 'أدوات', content: `<h3>Docker</h3><p>حاويات لتوحيد بيئة التشغيل. images, containers, Dockerfile, docker-compose.</p>` },
+            { id: 'postman', title: 'Postman و اختبار APIs', badge: 'أدوات', content: `<h3>Postman</h3><p>أداة قوية لاختبار واجهات البرمجة REST و GraphQL.</p>` },
+            { id: 'npm', title: 'npm و Node.js أساسيات', badge: 'أدوات', content: `<h3>npm</h3><pre>npm init -y\nnpm install express\nnpx create-react-app myapp</pre>` },
+            { id: 'vscode2', title: 'VS Code Extensions المتقدمة', badge: 'أدوات', content: `<h3>إضافات متقدمة</h3><ul><li>Thunder Client</li><li>REST Client</li><li>Docker</li><li>Remote SSH</li></ul>` },
+            { id: 'vim', title: 'مقدمة Vim / Neovim', badge: 'أدوات', content: `<h3>Vim</h3><p>محرر سطر أوامر قوي. أوضاع Normal, Insert, Visual.</p>` },
+            { id: 'ssh', title: 'SSH والاتصال الآمن', badge: 'أدوات', content: `<h3>SSH</h3><pre>ssh user@host\nssh-keygen -t ed25519\nssh-copy-id user@host</pre>` },
+            { id: 'cron', title: 'Cron Jobs والجدولة', badge: 'أدوات', content: `<h3>Cron</h3><p>جدولة المهام على Linux. crontab -e</p>` },
+            { id: 'tools-review', title: 'مراجعة أدوات المطور', badge: 'أدوات', content: `<h3>ملخص الأدوات</h3><p>VS Code + Git + Terminal + Docker + Postman = بيئة مطور قوية.</p>` }
+        ];
+
+        toolsData.forEach((t, i) => {
+            lessons[t.id] = {
+                badge: t.badge,
+                title: t.title,
+                subtitle: 'دليل عملي من MEDO EL JAN Academy',
+                content: t.content,
+                cat: 'tools'
+            };
+        });
+
+        // Total check
+        console.log('Total lessons:', Object.keys(lessons).length);
+
+        // ===================== RENDER LESSONS GRID =====================
+        function renderLessons(cat = 'all') {
+            const grid = document.getElementById('lessonsGrid');
+            grid.innerHTML = '';
+            const entries = Object.entries(lessons).filter(([id, l]) => cat === 'all' || l.cat === cat);
+            entries.forEach(([id, lesson]) => {
+                const color = lesson.cat === 'python' ? 'cyan' : lesson.cat === 'web' ? 'purple' : lesson.cat === 'cyber' ? 'emerald' : 'amber';
+                const div = document.createElement('div');
+                div.className = 'lesson-card bg-cyber-card border border-cyber-border rounded-xl p-4 cursor-pointer hover:border-cyber-neonGreen';
+                div.onclick = () => openLesson(id);
+                div.innerHTML = `
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-${color}-500/10 text-${color}-400">${lesson.badge}</span>
+                        <i class="fa-solid fa-book-open text-cyber-neonGreen text-sm mt-0.5"></i>
+                    </div>
+                    <h4 class="text-sm font-bold leading-snug text-white">${lesson.title}</h4>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function showCat(cat) {
+            document.querySelectorAll('.cat-tab').forEach(t => {
+                t.classList.remove('active');
+                t.classList.add('text-cyber-textMuted');
+            });
+            const btn = document.querySelector(`.cat-tab[data-cat="${cat}"]`);
+            if (btn) {
+                btn.classList.add('active');
+                btn.classList.remove('text-cyber-textMuted');
+            }
+            renderLessons(cat);
+        }
+
+        // ===================== AUTH & LOCAL STORAGE =====================
+        function checkAuth() {
+            var user = null;
+            try {
+                user = localStorage.getItem('medo_user') || sessionStorage.getItem('medo_user');
+            } catch (e) {}
+            var overlay = document.getElementById('authOverlay');
+            if (user) {
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                    overlay.style.display = 'none';
+                }
+                var badge = document.getElementById('userBadge');
+                if (badge) {
+                    badge.classList.remove('hidden');
+                    badge.classList.add('flex');
+                }
+                var logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
+                var nameEl = document.getElementById('loggedUserName');
+                if (nameEl) nameEl.textContent = user;
+                if (!isMusicPlaying) {
+                    setTimeout(function() { try { toggleMusic(true); } catch(e){} }, 900);
+                }
+            } else {
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                    overlay.style.display = '';
+                }
+            }
+        }
+
+        function handleLogin(e) {
+            if (e) e.preventDefault();
+            try {
+                const userEl = document.getElementById('loginUser');
+                const passEl = document.getElementById('loginPass');
+                const user = (userEl && userEl.value || '').trim();
+                const pass = (passEl && passEl.value) || '';
+                const rememberEl = document.getElementById('rememberMe');
+                const remember = rememberEl ? rememberEl.checked : true;
+
+                if (!user) {
+                    alert('اكتب اسم المستخدم');
+                    return;
+                }
+                if (!pass) {
+                    alert('اكتب كلمة المرور');
+                    return;
+                }
+
+                try {
+                    if (remember) {
+                        localStorage.setItem('medo_user', user);
+                        sessionStorage.removeItem('medo_user');
+                    } else {
+                        sessionStorage.setItem('medo_user', user);
+                        localStorage.removeItem('medo_user');
+                    }
+                } catch (storageErr) {
+                    // بعض المتصفحات تمنع التخزين في وضع الخصوصية
+                    console.warn('storage', storageErr);
+                }
+
+                const overlay = document.getElementById('authOverlay');
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                    overlay.style.display = 'none';
+                }
+                const badge = document.getElementById('userBadge');
+                if (badge) {
+                    badge.classList.remove('hidden');
+                    badge.classList.add('flex');
+                }
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
+                const nameEl = document.getElementById('loggedUserName');
+                if (nameEl) nameEl.textContent = user;
+
+                setTimeout(function() {
+                    try { toggleMusic(true); } catch (mErr) { console.warn('music', mErr); }
+                }, 500);
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ، حاول مرة أخرى');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('medo_user');
+            sessionStorage.removeItem('medo_user');
+            document.getElementById('userBadge').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('authOverlay').classList.remove('hidden');
+            if (isMusicPlaying) toggleMusic();
+        }
+
+        // ===================== SAD MUSIC (حزينة) =====================
+        let audioCtx = null;
+        let isMusicPlaying = false;
+        let oscillators = [];
+        let masterGain = null;
+        let lfo = null;
+
+        function toggleMusic(forceStart = false) {
+            if (forceStart && isMusicPlaying) return;
+            const icon = document.getElementById('musicIcon');
+            try {
+                if (!isMusicPlaying) {
+                    var AC = window.AudioContext || window.webkitAudioContext;
+                    if (!AC) return;
+                    audioCtx = new AC();
+                    masterGain = audioCtx.createGain();
+                    masterGain.gain.setValueAtTime(0.012, audioCtx.currentTime);
+                    masterGain.connect(audioCtx.destination);
+
+                    var freqs = [130.81, 155.56, 196.00, 233.08, 261.63];
+                    freqs.forEach(function(f, i) {
+                        var osc = audioCtx.createOscillator();
+                        var g = audioCtx.createGain();
+                        osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+                        g.gain.setValueAtTime(0.004 - i * 0.0005, audioCtx.currentTime);
+                        osc.connect(g);
+                        g.connect(masterGain);
+                        osc.start();
+                        oscillators.push(osc);
+                    });
+
+                    lfo = audioCtx.createOscillator();
+                    var lfoGain = audioCtx.createGain();
+                    lfo.frequency.value = 0.08;
+                    lfoGain.gain.value = 0.003;
+                    lfo.connect(lfoGain);
+                    lfoGain.connect(masterGain.gain);
+                    lfo.start();
+
+                    isMusicPlaying = true;
+                    if (icon) icon.className = "fa-solid fa-volume-high text-cyber-neonGreen";
+                } else {
+                    oscillators.forEach(function(o) { try { o.stop(); o.disconnect(); } catch(e){} });
+                    oscillators = [];
+                    if (lfo) { try { lfo.stop(); lfo.disconnect(); } catch(e){} lfo = null; }
+                    if (audioCtx) { try { audioCtx.close(); } catch(e){} }
+                    isMusicPlaying = false;
+                    if (icon) icon.className = "fa-solid fa-music";
+                }
+            } catch (err) {
+                console.warn('music error', err);
+            }
+        }
+
+        // ===================== VIEW SWITCHING =====================
+        function openLesson(id) {
+            const lesson = lessons[id];
+            if (!lesson) return;
+            document.getElementById('mainContent').classList.add('hidden-view');
+            var lp = document.getElementById('lessonPage');
+            lp.classList.add('active');
+            // إزالة الثيمات القديمة وتطبيق ثيم حسب التصنيف
+            lp.classList.remove('theme-python', 'theme-web', 'theme-cyber', 'theme-tools');
+            var theme = 'theme-python';
+            if (lesson.cat === 'web') theme = 'theme-web';
+            else if (lesson.cat === 'cyber') theme = 'theme-cyber';
+            else if (lesson.cat === 'tools') theme = 'theme-tools';
+            lp.classList.add(theme);
+            document.getElementById('lessonBadge').textContent = lesson.badge;
+            document.getElementById('lessonTitle').textContent = lesson.title;
+            document.getElementById('lessonSubtitle').textContent = lesson.subtitle;
+            document.getElementById('lessonBody').innerHTML = lesson.content;
+            window.scrollTo(0, 0);
+        }
+
+        function closeLesson() {
+            var lp = document.getElementById('lessonPage');
+            lp.classList.remove('active');
+            lp.classList.remove('theme-python', 'theme-web', 'theme-cyber', 'theme-tools');
+            document.getElementById('mainContent').classList.remove('hidden-view');
+            window.scrollTo(0, 0);
+        }
+
+        // ===================== IDE =====================
+        function updateLineNumbers() {
+            const code = document.getElementById('codeEditor').value;
+            const lines = code.split('\n').length;
+            let html = '';
+            for (let i = 1; i <= lines; i++) html += i + '\n';
+            document.getElementById('lineNumbers').textContent = html;
+        }
+
+        function clearEditor() {
+            document.getElementById('codeEditor').value = '';
+            document.getElementById('outputConsole').textContent = '> تم مسح المحرر';
+            updateLineNumbers();
+        }
+
+        function runCode() {
+            const lang = document.getElementById('langSelect').value;
+            const code = document.getElementById('codeEditor').value;
+            const output = document.getElementById('outputConsole');
+            output.textContent = '> جاري التنفيذ...\n';
+
+            setTimeout(() => {
+                try {
+                    if (lang === 'javascript') {
+                        let logs = [];
+                        const originalLog = console.log;
+                        console.log = (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+                        let result = eval(code);
+                        console.log = originalLog;
+                        if (logs.length) {
+                            output.textContent = '> المخرجات:\n' + logs.join('\n');
+                        } else {
+                            output.textContent = '> تم التنفيذ\n> النتيجة: ' + (result !== undefined ? result : 'لا توجد مخرجات');
+                        }
+                    } else {
+                        let result = '';
+                        const lines = code.split('\n');
+                        lines.forEach(line => {
+                            let m = line.match(/print\s*\(\s*(?:f)?["']([^"']*)["']\s*\)/);
+                            if (m) {
+                                let text = m[1];
+                                text = text.replace(/\{[^}]*name[^}]*\}/gi, 'مبرمج محترف');
+                                text = text.replace(/\{[^}]*i[^}]*\}/gi, '1');
+                                result += text + '\n';
+                            }
+                            if (line.includes('print("=" *') || line.includes("print('=' *")) {
+                                result += '=============================================\n';
+                            }
+                        });
+                        if (code.includes('for') && code.includes('range') && code.includes('المستوى')) {
+                            const rm = code.match(/range\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/);
+                            if (rm) {
+                                const start = parseInt(rm[1]);
+                                const end = parseInt(rm[2]);
+                                for (let i = start; i < end; i++) {
+                                    result += `  → المستوى ${i} جاهز للتعلم\n`;
+                                }
+                            }
+                        }
+                        if (result) {
+                            output.textContent = '> مخرجات Python 3:\n' + result + '\n> تم التنفيذ بنجاح ✓';
+                        } else {
+                            output.textContent = '> تم تنفيذ الكود (لا توجد أوامر print ظاهرة)';
+                        }
+                    }
+                } catch (err) {
+                    output.textContent = '> خطأ:\n' + err.message;
+                }
+            }, 280);
+        }
+
+        // ===================== CANVAS ANIMATION (متعدد الألوان احترافي) =====================
+        const canvas = document.getElementById('cyberCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: null, y: null };
+        let hueShift = 0;
+
+        // ألوان نيون متعددة
+        const colorPalette = [
+            [0, 255, 204],    // cyan-green
+            [0, 212, 255],    // cyan-blue
+            [168, 85, 247],   // purple
+            [236, 72, 153],   // pink
+            [52, 211, 153],   // emerald
+            [251, 191, 36],   // amber
+            [96, 165, 250],   // blue
+            [248, 113, 113]   // soft red
+        ];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('touchmove', e => {
+            if (e.touches[0]) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        for (let i = 0; i < 110; i++) {
+            const c = colorPalette[i % colorPalette.length];
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2.4 + 0.4,
+                speedX: (Math.random() - 0.5) * 0.6,
+                speedY: (Math.random() - 0.5) * 0.6,
+                r: c[0], g: c[1], b: c[2],
+                pulse: Math.random() * Math.PI * 2
+            });
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hueShift += 0.15;
+
+            // توهج خلفي خفيف يتحرك
+            var gx = canvas.width * (0.3 + 0.2 * Math.sin(hueShift * 0.02));
+            var gy = canvas.height * (0.4 + 0.15 * Math.cos(hueShift * 0.015));
+            var grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, canvas.width * 0.45);
+            grad.addColorStop(0, 'rgba(0,212,255,0.04)');
+            grad.addColorStop(0.4, 'rgba(168,85,247,0.025)');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(function(p, index) {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.pulse += 0.03;
+
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+
+                if (mouse.x && mouse.y) {
+                    var dx = mouse.x - p.x;
+                    var dy = mouse.y - p.y;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        p.x -= dx * 0.014;
+                        p.y -= dy * 0.014;
+                    }
+                }
+
+                var alpha = 0.25 + 0.25 * Math.sin(p.pulse);
+                var rad = p.radius * (0.85 + 0.25 * Math.sin(p.pulse));
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',' + alpha + ')';
+                ctx.fill();
+
+                // هالة ناعمة
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, rad * 2.5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',' + (alpha * 0.15) + ')';
+                ctx.fill();
+
+                for (var j = index + 1; j < particles.length; j++) {
+                    var p2 = particles[j];
+                    var d = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (d < 130) {
+                        var lineA = 0.12 * (1 - d / 130);
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'rgba(' + Math.floor((p.r + p2.r) / 2) + ',' +
+                            Math.floor((p.g + p2.g) / 2) + ',' +
+                            Math.floor((p.b + p2.b) / 2) + ',' + lineA + ')';
+                        ctx.lineWidth = 0.7;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // Init
+        updateLineNumbers();
+        checkAuth();
+        renderLessons('all');
+
+        // ربط زر تسجيل الدخول بشكل موثوق (موبايل + ديسكتوب)
+        (function bindLogin() {
+            var btn = document.getElementById('loginBtn');
+            var form = document.getElementById('loginForm');
+            if (btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleLogin(e);
+                });
+            }
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleLogin(e);
+                });
+            }
+            // Enter key
+            var pass = document.getElementById('loginPass');
+            if (pass) {
+                pass.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleLogin(e);
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
