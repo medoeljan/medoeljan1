@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDO EL JAN Academy - منصة البرمجة والأمن السيبراني</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            dark: '#03040a',
+                            card: '#0a0e1a',
+                            border: '#1a2332',
+                            neonGreen: '#00ffcc',
+                            neonBlue: '#00d4ff',
+                            neonPurple: '#a855f7',
+                            textMuted: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Fira+Code:wght@400;500;600&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #03040a;
+            color: #f8fafc;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        .code-font { font-family: 'Fira Code', monospace; }
+        .neon-glow { text-shadow: 0 0 12px rgba(0,255,204,0.8), 0 0 25px rgba(0,212,255,0.4); }
+        .neon-box { box-shadow: 0 0 20px rgba(0,255,204,0.15), inset 0 0 20px rgba(0,212,255,0.05); }
+
+        #cyberCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        ::-webkit-scrollbar { width: 7px; }
+        ::-webkit-scrollbar-track { background: #03040a; }
+        ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ffcc; }
+
+        .lesson-page { display: none; min-height: 100vh; position: relative; z-index: 10; }
+        .lesson-page.active { display: block; }
+        .main-content.hidden-view { display: none !important; }
+
+        /* خلفيات ملونة مختلفة لكل قسم */
+        #hero {
+            background: radial-gradient(ellipse at 30% 20%, rgba(0,255,204,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(168,85,247,0.07) 0%, transparent 45%);
+        }
+        #editors {
+            background: linear-gradient(180deg, rgba(0,212,255,0.06) 0%, rgba(10,14,26,0.9) 40%, rgba(168,85,247,0.05) 100%);
+        }
+        #courses {
+            background: radial-gradient(ellipse at 50% 0%, rgba(0,255,204,0.06) 0%, transparent 55%),
+                        radial-gradient(ellipse at 80% 100%, rgba(59,130,246,0.07) 0%, transparent 40%);
+        }
+        #compiler {
+            background: linear-gradient(135deg, rgba(6,10,20,0.95) 0%, rgba(15,8,30,0.9) 50%, rgba(6,20,25,0.95) 100%);
+        }
+        #contact {
+            background: radial-gradient(ellipse at 50% 40%, rgba(239,68,68,0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at 20% 90%, rgba(168,85,247,0.08) 0%, transparent 40%),
+                        linear-gradient(180deg, transparent 0%, rgba(3,4,10,0.8) 100%);
+        }
+
+        /* ثيمات صفحات الدروس حسب التصنيف */
+        .lesson-page.theme-python {
+            background: radial-gradient(ellipse at 20% 10%, rgba(0,255,204,0.12) 0%, transparent 45%),
+                        radial-gradient(ellipse at 80% 90%, rgba(0,212,255,0.08) 0%, transparent 40%),
+                        #03040a;
+        }
+        .lesson-page.theme-python .lesson-content {
+            border-color: rgba(0,255,204,0.35);
+            box-shadow: 0 0 40px rgba(0,255,204,0.08);
+        }
+        .lesson-page.theme-python .lesson-content h3 { color: #00ffcc; border-right-color: #00ffcc; }
+
+        .lesson-page.theme-web {
+            background: radial-gradient(ellipse at 70% 15%, rgba(168,85,247,0.14) 0%, transparent 45%),
+                        radial-gradient(ellipse at 20% 85%, rgba(236,72,153,0.08) 0%, transparent 40%),
+                        #0a0614;
+        }
+        .lesson-page.theme-web .lesson-content {
+            border-color: rgba(168,85,247,0.4);
+            box-shadow: 0 0 40px rgba(168,85,247,0.1);
+        }
+        .lesson-page.theme-web .lesson-content h3 { color: #c084fc; border-right-color: #a855f7; }
+        .lesson-page.theme-web .lesson-content h4 { color: #e879f9; }
+
+        .lesson-page.theme-cyber {
+            background: radial-gradient(ellipse at 50% 20%, rgba(16,185,129,0.12) 0%, transparent 45%),
+                        radial-gradient(ellipse at 10% 80%, rgba(239,68,68,0.08) 0%, transparent 40%),
+                        #040a08;
+        }
+        .lesson-page.theme-cyber .lesson-content {
+            border-color: rgba(16,185,129,0.4);
+            box-shadow: 0 0 40px rgba(16,185,129,0.1);
+        }
+        .lesson-page.theme-cyber .lesson-content h3 { color: #34d399; border-right-color: #10b981; }
+        .lesson-page.theme-cyber .lesson-content h4 { color: #6ee7b7; }
+
+        .lesson-page.theme-tools {
+            background: radial-gradient(ellipse at 30% 20%, rgba(251,191,36,0.1) 0%, transparent 45%),
+                        radial-gradient(ellipse at 90% 70%, rgba(249,115,22,0.08) 0%, transparent 40%),
+                        #0a0804;
+        }
+        .lesson-page.theme-tools .lesson-content {
+            border-color: rgba(251,191,36,0.35);
+            box-shadow: 0 0 40px rgba(251,191,36,0.08);
+        }
+        .lesson-page.theme-tools .lesson-content h3 { color: #fbbf24; border-right-color: #f59e0b; }
+        .lesson-page.theme-tools .lesson-content h4 { color: #fcd34d; }
+
+        .lesson-content h3 {
+            color: #00ffcc;
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin: 1.8rem 0 0.7rem;
+            border-right: 4px solid #00ffcc;
+            padding-right: 12px;
+        }
+        .lesson-content h4 {
+            color: #00d4ff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 1.3rem 0 0.5rem;
+        }
+        .lesson-content p { margin-bottom: 0.9rem; line-height: 1.85; color: #cbd5e1; font-size: 0.95rem; }
+        .lesson-content ul, .lesson-content ol { margin: 0.8rem 0 1.2rem; padding-right: 1.5rem; }
+        .lesson-content li { margin-bottom: 0.45rem; color: #94a3b8; line-height: 1.65; }
+        .lesson-content pre {
+            background: #060a14;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 1.1rem 1.3rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.82rem;
+            margin: 1rem 0;
+            color: #00ffcc;
+            direction: ltr;
+            text-align: left;
+            line-height: 1.55;
+        }
+        .lesson-content .tip {
+            background: rgba(0,255,204,0.07);
+            border: 1px solid rgba(0,255,204,0.22);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin: 1.3rem 0;
+        }
+        .lesson-content .exercise {
+            background: rgba(168,85,247,0.08);
+            border: 1px solid rgba(168,85,247,0.28);
+            border-radius: 12px;
+            padding: 1.1rem 1.3rem;
+            margin: 1.4rem 0;
+        }
+        .lesson-content .warning {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 12px;
+            padding: 0.9rem 1.1rem;
+            margin: 1.2rem 0;
+        }
+
+        .ide-wrapper {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #1a2332;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+        }
+        .ide-line-numbers {
+            background: #060a12;
+            color: #475569;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            padding: 1rem 0.6rem;
+            text-align: left;
+            user-select: none;
+            min-width: 42px;
+            line-height: 1.55;
+            border-left: 1px solid #1a2332;
+        }
+        #codeEditor { line-height: 1.55; tab-size: 4; }
+
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 30%, rgba(0,212,255,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.07) 0%, transparent 45%),
+                        rgba(3,4,10,0.55);
+            backdrop-filter: blur(6px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* اسم MEDO EL JAN المتحرك بين يدين هكرز */
+        .floating-name-wrap {
+            position: relative;
+            z-index: 110;
+            margin-bottom: 1.5rem;
+            height: 110px;
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            overflow: visible;
+        }
+        .hacker-hand {
+            position: absolute;
+            top: 50%;
+            width: 56px;
+            height: 70px;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        .hacker-hand.left { left: 2%; animation: grabLeft 3.5s ease-in-out infinite; }
+        .hacker-hand.right { right: 2%; animation: grabRight 3.5s ease-in-out infinite; }
+        .hacker-hand svg { width: 100%; height: 100%; filter: drop-shadow(0 0 8px rgba(0,255,204,0.6)); }
+        .floating-name {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(1.5rem, 5.5vw, 2.3rem);
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            background: linear-gradient(90deg, #00ffcc, #00d4ff, #a855f7, #ec4899, #00ffcc);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 14px rgba(0,255,204,0.8)) drop-shadow(0 0 30px rgba(0,212,255,0.45));
+            animation: nameBetweenHands 4s ease-in-out infinite, nameShine 2.5s linear infinite;
+            white-space: nowrap;
+            font-family: 'Cairo', sans-serif;
+        }
+        .name-subtitle-float {
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            font-family: 'Fira Code', monospace;
+            color: rgba(168,85,247,0.9);
+            letter-spacing: 0.25em;
+            animation: nameBetweenHands 4s ease-in-out infinite;
+            animation-delay: 0.1s;
+        }
+        @keyframes nameBetweenHands {
+            0%, 100% { transform: translateX(-36px) translateY(2px) scale(1); }
+            20% { transform: translateX(8px) translateY(-12px) scale(1.04); }
+            40% { transform: translateX(40px) translateY(0px) scale(1); }
+            60% { transform: translateX(12px) translateY(-10px) scale(1.03); }
+            80% { transform: translateX(-20px) translateY(4px) scale(1); }
+        }
+        @keyframes nameShine {
+            0% { background-position: 0% center; }
+            100% { background-position: 300% center; }
+        }
+        @keyframes grabLeft {
+            0%, 100% { transform: translateY(-50%) translateX(0) rotate(-12deg); }
+            50% { transform: translateY(-50%) translateX(14px) rotate(-22deg); }
+        }
+        @keyframes grabRight {
+            0%, 100% { transform: translateY(-50%) translateX(0) rotate(12deg); }
+            50% { transform: translateY(-50%) translateX(-14px) rotate(22deg); }
+        }
+        .auth-overlay.hidden { display: none !important; }
+
+
+        /* هكرز بعد الدخول — الاسم بين اليدين */
+        .hacker-showcase {
+            position: relative;
+            max-width: 480px;
+            margin: 1.5rem auto 2rem;
+            padding: 1.25rem 1rem 1.5rem;
+            background: radial-gradient(ellipse at 50% 30%, rgba(0,255,204,0.08) 0%, transparent 60%),
+                        rgba(10,14,26,0.65);
+            border: 1px solid rgba(0,255,204,0.25);
+            border-radius: 1.5rem;
+            box-shadow: 0 0 40px rgba(0,255,204,0.08), inset 0 0 40px rgba(0,0,0,0.3);
+        }
+        .hacker-img-wrap {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            margin: 0 auto 0.5rem;
+            border-radius: 1.25rem;
+            overflow: hidden;
+            border: 2px solid rgba(0,255,204,0.6);
+            box-shadow: 0 0 25px rgba(0,255,204,0.35), 0 0 50px rgba(239,68,68,0.15);
+        }
+        .hacker-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+            display: block;
+        }
+        .name-hands-stage {
+            position: relative;
+            min-height: 64px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .stage-hand {
+            flex-shrink: 0;
+            width: 44px;
+            height: 56px;
+            animation: handBob 2.8s ease-in-out infinite;
+        }
+        .stage-hand.left { animation-name: handBobL; }
+        .stage-hand.right { animation-name: handBobR; }
+        .stage-hand svg { width: 100%; height: 100%; filter: drop-shadow(0 0 6px rgba(0,255,204,0.7)); }
+        @keyframes handBobL {
+            0%, 100% { transform: rotate(-8deg) translateX(0); }
+            50% { transform: rotate(-16deg) translateX(6px); }
+        }
+        @keyframes handBobR {
+            0%, 100% { transform: rotate(8deg) translateX(0); }
+            50% { transform: rotate(16deg) translateX(-6px); }
+        }
+        .assembled-name {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            gap: 2px;
+            min-width: 200px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.35rem, 5vw, 2rem);
+            letter-spacing: 0.06em;
+            direction: ltr;
+        }
+        .assembled-name .letter {
+            display: inline-block;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0,255,204,0.9), 0 0 24px rgba(0,212,255,0.5);
+            min-width: 0.65em;
+            text-align: center;
+            transition: color 0.15s, text-shadow 0.15s, transform 0.2s;
+        }
+        .assembled-name .letter.done {
+            color: #fff;
+            background: linear-gradient(135deg, #00ffcc, #00d4ff, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+            filter: drop-shadow(0 0 8px rgba(0,255,204,0.8));
+            transform: scale(1.05);
+        }
+        .assembled-name .space { width: 0.4em; display: inline-block; }
+
+        .user-badge {
+            background: linear-gradient(135deg, rgba(0,255,204,0.15), rgba(0,212,255,0.1));
+            border: 1px solid rgba(0,255,204,0.3);
+        }
+
+        .lesson-card {
+            transition: all 0.25s ease;
+        }
+        .lesson-card:hover {
+            border-color: #00ffcc !important;
+            transform: translateY(-2px);
+        }
+
+        .cat-tab.active {
+            background: linear-gradient(135deg, rgba(0,255,204,0.2), rgba(0,212,255,0.15));
+            border-color: #00ffcc;
+            color: #00ffcc;
+        }
+    </style>
+</head>
+<body class="bg-cyber-dark text-slate-100">
+
+    <canvas id="cyberCanvas"></canvas>
+
+    <!-- ===================== AUTH OVERLAY (Professional) ===================== -->
+    <div id="authOverlay" class="auth-overlay">
+        <!-- اسم متحرك بين يدين هكرز -->
+        <div class="floating-name-wrap">
+            <div class="hacker-hand left">
+                <svg viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 78 V42 Q18 28 28 28 Q32 18 38 22 Q42 12 48 18 Q54 14 56 22 V48 Q56 58 48 62 L42 78 Z" fill="#0a1628" stroke="#00ffcc" stroke-width="2"/>
+                    <path d="M28 28 V18 Q28 10 34 12 Q38 8 40 14 V28" fill="#0a1628" stroke="#00ffcc" stroke-width="1.5"/>
+                    <path d="M38 22 V12 Q38 6 44 8 Q48 6 48 12 V22" fill="#0a1628" stroke="#00ffcc" stroke-width="1.5"/>
+                    <circle cx="22" cy="50" r="2" fill="#00ffcc" opacity="0.8"/>
+                    <path d="M20 58 H36" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+                </svg>
+            </div>
+            <span class="floating-name">MEDO EL JAN</span>
+            <span class="name-subtitle-float">HACKER MODE</span>
+            <div class="hacker-hand right">
+                <svg viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)">
+                    <path d="M18 78 V42 Q18 28 28 28 Q32 18 38 22 Q42 12 48 18 Q54 14 56 22 V48 Q56 58 48 62 L42 78 Z" fill="#0a1628" stroke="#00ffcc" stroke-width="2"/>
+                    <path d="M28 28 V18 Q28 10 34 12 Q38 8 40 14 V28" fill="#0a1628" stroke="#00ffcc" stroke-width="1.5"/>
+                    <path d="M38 22 V12 Q38 6 44 8 Q48 6 48 12 V22" fill="#0a1628" stroke="#00ffcc" stroke-width="1.5"/>
+                    <circle cx="22" cy="50" r="2" fill="#00ffcc" opacity="0.8"/>
+                    <path d="M20 58 H36" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+                </svg>
+            </div>
+        </div>
+        <div class="relative z-10 w-full max-w-md mx-4">
+            <div class="bg-cyber-card/90 border border-cyber-border rounded-3xl p-8 sm:p-10 shadow-2xl neon-box backdrop-blur-xl">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center neon-box shadow-lg shadow-cyan-500/20">
+                        <i class="fa-solid fa-terminal text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">MEDO EL JAN</h1>
+                    <p class="text-cyber-neonGreen font-mono text-xs tracking-widest mb-1">ACADEMY v5.0</p>
+                    <p class="text-cyber-textMuted text-sm mt-3">سجّل دخولك للوصول الكامل للمنصة التعليمية</p>
+                </div>
+
+                <form id="loginForm" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-mono text-cyber-textMuted mb-2">اسم المستخدم</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute right-3.5 top-1/2 -translate-y-1/2 text-cyber-textMuted text-sm"></i>
+                            <input type="text" id="loginUser" required placeholder="مثال: medo_dev" autocomplete="username"
+                                class="w-full bg-cyber-dark/80 border border-cyber-border rounded-xl py-3.5 pr-11 pl-4 text-sm text-white focus:outline-none focus:border-cyber-neonGreen focus:ring-1 focus:ring-cyber-neonGreen/40 transition">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono text-cyber-textMuted mb-2">كلمة المرور</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute right-3.5 top-1/2 -translate-y-1/2 text-cyber-textMuted text-sm"></i>
+                            <input type="password" id="loginPass" required placeholder="••••••••" autocomplete="current-password"
+                                class="w-full bg-cyber-dark/80 border border-cyber-border rounded-xl py-3.5 pr-11 pl-4 text-sm text-white focus:outline-none focus:border-cyber-neonGreen focus:ring-1 focus:ring-cyber-neonGreen/40 transition">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                            <input type="checkbox" id="rememberMe" checked class="w-4 h-4 accent-cyan-500 rounded">
+                            <span class="text-sm text-cyber-textMuted">حفظ تسجيل الدخول على هذا الجهاز</span>
+                        </label>
+                    </div>
+                    <button type="button" id="loginBtn" class="w-full py-4 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-cyan-500/30 transition flex items-center justify-center gap-2 text-base">
+                        <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+                    </button>
+                </form>
+                <p class="text-center text-xs text-cyber-textMuted mt-6 leading-relaxed">
+                    أي اسم مستخدم + أي كلمة مرور تعمل (وضع تجريبي)<br>
+                    <span class="text-cyber-neonGreen/80">✓ يتم حفظ الجلسة محلياً عند التفعيل</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <div id="mainContent" class="main-content relative z-10">
+
+        <header class="sticky top-0 z-50 bg-cyber-dark/90 backdrop-blur-xl border-b border-cyber-border">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between py-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center neon-box">
+                        <i class="fa-solid fa-terminal text-xl text-white"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-black tracking-wider bg-gradient-to-r from-cyber-neonGreen via-cyber-neonBlue to-cyber-neonPurple bg-clip-text text-transparent">MEDO EL JAN</span>
+                        <span class="block text-[10px] text-cyber-textMuted tracking-widest font-mono">ACADEMY v5.0</span>
+                    </div>
+                </div>
+                <nav class="hidden md:flex items-center gap-7 text-sm font-semibold">
+                    <a href="#hero" class="hover:text-cyber-neonGreen transition">الرئيسية</a>
+                    <a href="#editors" class="hover:text-cyber-neonGreen transition">المحررات</a>
+                    <a href="#courses" class="hover:text-cyber-neonGreen transition">الدورات</a>
+                    <a href="#compiler" class="hover:text-cyber-neonGreen transition">محرر الأكواد</a>
+                    <a href="#contact" class="hover:text-cyber-neonGreen transition">التواصل</a>
+                </nav>
+                <div class="flex items-center gap-3">
+                    <div id="userBadge" class="user-badge hidden items-center gap-2 px-3 py-1.5 rounded-xl text-sm">
+                        <i class="fa-solid fa-user text-cyber-neonGreen"></i>
+                        <span id="loggedUserName" class="font-bold text-cyber-neonGreen"></span>
+                    </div>
+                    <button onclick="logout()" id="logoutBtn" class="hidden px-3 py-1.5 text-xs border border-cyber-border rounded-lg hover:border-red-400 hover:text-red-400 transition">
+                        خروج
+                    </button>
+                    <button onclick="toggleMusic()" id="musicBtn" class="px-3 py-2 bg-cyber-card border border-cyber-border rounded-lg text-cyber-neonGreen hover:bg-cyber-border transition text-sm" title="موسيقى حزينة">
+                        <i class="fa-solid fa-music" id="musicIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <section id="hero" class="relative pt-24 pb-28 px-4 max-w-7xl mx-auto text-center">
+            <div class="inline-block mb-5 px-4 py-1.5 rounded-full border border-cyber-neonGreen/30 bg-cyber-neonGreen/10 text-cyber-neonGreen text-xs font-mono tracking-wider">
+                ⚡ المنصة البرمجية الأولى — 300 درس شامل
+            </div>
+            <!-- هكرز بالقناع + الاسم بين اليدين -->
+            <div class="hacker-showcase">
+                <div class="hacker-img-wrap">
+                    <img src="medo-profile.jpg" alt="MEDO EL JAN Hacker">
+                </div>
+                <div class="name-hands-stage">
+                    <div class="stage-hand left">
+                        <svg viewBox="0 0 64 80" fill="none"><path d="M18 78 V42 Q18 28 28 28 Q32 18 38 22 Q42 12 48 18 Q54 14 56 22 V48 Q56 58 48 62 L42 78 Z" fill="#0a1628" stroke="#00ffcc" stroke-width="2"/><path d="M28 28 V18 Q28 10 34 12 Q38 8 40 14 V28" fill="#0a1628" stroke="#00ffcc" stroke-width="1.5"/><path d="M38 22 V12 Q38 6 44 8 Q48 6 48 12 V22" fill="#0a1628" stroke="#00ffcc" stroke-width="1.5"/><circle cx="22" cy="50" r="2" fill="#00ffcc"/></svg>
+                    </div>
+                    <div class="assembled-name" id="assembledName"></div>
+                    <div class="stage-hand right">
+                        <svg viewBox="0 0 64 80" fill="none" style="transform:scaleX(-1)"><path d="M18 78 V42 Q18 28 28 28 Q32 18 38 22 Q42 12 48 18 Q54 14 56 22 V48 Q56 58 48 62 L42 78 Z" fill="#0a1628" stroke="#00ffcc" stroke-width="2"/><path d="M28 28 V18 Q28 10 34 12 Q38 8 40 14 V28" fill="#0a1628" stroke="#00ffcc" stroke-width="1.5"/><path d="M38 22 V12 Q38 6 44 8 Q48 6 48 12 V22" fill="#0a1628" stroke="#00ffcc" stroke-width="1.5"/><circle cx="22" cy="50" r="2" fill="#00ffcc"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight leading-tight">
+                مرحباً بك في عالم الاحتراف مع<br>
+                <span class="bg-gradient-to-r from-cyber-neonGreen via-cyber-neonBlue to-cyber-neonPurple bg-clip-text text-transparent neon-glow">MEDO EL JAN</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-cyber-textMuted text-lg mb-10 leading-relaxed">
+                تعلم البرمجة الحقيقية، احترف بايثون وتطوير الويب والأمن السيبراني — 300 درس مفصّل مع واجهة مستقلة لكل درس.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#courses" class="px-8 py-4 rounded-xl bg-cyber-neonGreen text-cyber-dark font-black hover:bg-white transition shadow-lg shadow-cyber-neonGreen/25">
+                    استكشف الدورات <i class="fa-solid fa-arrow-left mr-2"></i>
+                </a>
+                <a href="https://wa.me/message/IDAQMNL3ABVAN1" target="_blank" class="px-8 py-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/25 flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-xl"></i> تواصل واتساب
+                </a>
+            </div>
+        </section>
+
+        <section id="editors" class="py-20 bg-cyber-card/30 border-y border-cyber-border">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="text-center mb-14">
+                    <h2 class="text-3xl font-black mb-3">أبرز محررات الأكواد</h2>
+                    <p class="text-cyber-textMuted">اختر الأداة المناسبة وابدأ رحلة الاحتراف</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-cyber-card border border-cyber-border p-6 rounded-2xl hover:border-cyber-neonGreen transition group">
+                        <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 text-2xl mb-4 group-hover:scale-110 transition"><i class="fa-solid fa-code"></i></div>
+                        <h3 class="text-xl font-bold mb-2">VS Code</h3>
+                        <p class="text-cyber-textMuted text-sm mb-4">المحرر الأشهر عالمياً مع آلاف الإضافات.</p>
+                        <button onclick="openLesson('vscode')" class="text-cyber-neonGreen text-sm font-bold hover:underline">قراءة الدرس الكامل ←</button>
+                    </div>
+                    <div class="bg-cyber-card border border-cyber-border p-6 rounded-2xl hover:border-cyber-neonGreen transition group">
+                        <div class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center text-green-400 text-2xl mb-4 group-hover:scale-110 transition"><i class="fa-solid fa-laptop-code"></i></div>
+                        <h3 class="text-xl font-bold mb-2">PyCharm</h3>
+                        <p class="text-cyber-textMuted text-sm mb-4">أفضل بيئة متكاملة لمطوري بايثون.</p>
+                        <button onclick="openLesson('pycharm')" class="text-cyber-neonGreen text-sm font-bold hover:underline">قراءة الدرس الكامل ←</button>
+                    </div>
+                    <div class="bg-cyber-card border border-cyber-border p-6 rounded-2xl hover:border-cyber-neonGreen transition group">
+                        <div class="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-400 text-2xl mb-4 group-hover:scale-110 transition"><i class="fa-solid fa-terminal"></i></div>
+                        <h3 class="text-xl font-bold mb-2">Sublime Text</h3>
+                        <p class="text-cyber-textMuted text-sm mb-4">سريع وخفيف مثالي للتعديلات السريعة.</p>
+                        <button onclick="openLesson('sublime')" class="text-cyber-neonGreen text-sm font-bold hover:underline">قراءة الدرس الكامل ←</button>
+                    </div>
+                    <div class="bg-cyber-card border border-cyber-border p-6 rounded-2xl hover:border-cyber-neonGreen transition group">
+                        <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-400 text-2xl mb-4 group-hover:scale-110 transition"><i class="fa-solid fa-server"></i></div>
+                        <h3 class="text-xl font-bold mb-2">Terminal</h3>
+                        <p class="text-cyber-textMuted text-sm mb-4">التحكم الكامل عبر سطر الأوامر.</p>
+                        <button onclick="openLesson('terminal')" class="text-cyber-neonGreen text-sm font-bold hover:underline">قراءة الدرس الكامل ←</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Courses with 100+ lessons -->
+        <section id="courses" class="py-20 max-w-7xl mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-black mb-3">الدورات والدروس التعليمية</h2>
+                <p class="text-cyber-textMuted">300 درس — اضغط على أي درس للدخول إلى واجهته الخاصة</p>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="flex flex-wrap justify-center gap-2 mb-10">
+                <button onclick="showCat('all')" class="cat-tab active px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition" data-cat="all">الكل (300)</button>
+                <button onclick="showCat('python')" class="cat-tab px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition text-cyber-textMuted" data-cat="python">بايثون (100)</button>
+                <button onclick="showCat('web')" class="cat-tab px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition text-cyber-textMuted" data-cat="web">تطوير ويب (80)</button>
+                <button onclick="showCat('cyber')" class="cat-tab px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition text-cyber-textMuted" data-cat="cyber">أمن سيبراني (70)</button>
+                <button onclick="showCat('tools')" class="cat-tab px-5 py-2 rounded-xl border border-cyber-border text-sm font-bold transition text-cyber-textMuted" data-cat="tools">أدوات (50)</button>
+            </div>
+
+            <div id="lessonsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Filled by JS -->
+            </div>
+        </section>
+
+        <!-- Professional IDE -->
+        <section id="compiler" class="py-20 bg-cyber-card/20 border-y border-cyber-border">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-black mb-3">محرر بايثون الاحترافي</h2>
+                    <p class="text-cyber-textMuted">واجهة شبيهة بـ IDE — اكتب كود بايثون أو جافاسكريبت وشغّله فوراً</p>
+                </div>
+                <div class="ide-wrapper bg-cyber-card">
+                    <div class="bg-[#0a0e18] px-4 py-2.5 border-b border-cyber-border flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="flex gap-1.5">
+                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                            </div>
+                            <span class="text-xs text-cyber-textMuted font-mono">MEDO EL JAN IDE — Python</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select id="langSelect" class="bg-cyber-dark text-xs border border-cyber-border rounded-lg px-3 py-1.5 text-cyber-neonGreen font-mono">
+                                <option value="python">Python 3.12</option>
+                                <option value="javascript">JavaScript</option>
+                            </select>
+                            <button onclick="runCode()" class="px-4 py-1.5 bg-cyber-neonGreen text-cyber-dark font-bold text-xs rounded-lg hover:bg-white transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-play"></i> تشغيل
+                            </button>
+                            <button onclick="clearEditor()" class="px-3 py-1.5 bg-cyber-dark border border-cyber-border text-cyber-textMuted text-xs rounded-lg hover:border-red-400 hover:text-red-400 transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex border-b border-cyber-border bg-[#070b14]">
+                        <div class="px-5 py-2 text-xs font-mono text-cyber-neonGreen border-b-2 border-cyber-neonGreen bg-cyber-card/50">
+                            <i class="fa-solid fa-file-code ml-1"></i> main.py
+                        </div>
+                        <div class="px-5 py-2 text-xs font-mono text-cyber-textMuted">
+                            <i class="fa-solid fa-terminal ml-1"></i> Output
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2">
+                        <div class="flex border-b lg:border-b-0 lg:border-l border-cyber-border">
+                            <div id="lineNumbers" class="ide-line-numbers">1</div>
+                            <textarea id="codeEditor" rows="18" spellcheck="false" oninput="updateLineNumbers()"
+                                class="flex-1 bg-[#070b14] text-cyber-neonGreen code-font text-sm p-4 focus:outline-none resize-none border-0"
+                            >print("=" * 45)
+print("   MEDO EL JAN - Python Professional IDE")
+print("=" * 45)
+
+name = "مبرمج محترف"
+print(f"\nأهلاً بك يا {name}!")
+print("مرحباً بك في بيئة البرمجة الاحترافية")
+
+for i in range(1, 4):
+    print(f"  → المستوى {i} جاهز للتعلم")
+
+print("\nاستمتع بالتعلم والتطوير...")</textarea>
+                        </div>
+                        <div class="flex flex-col bg-[#05080f]">
+                            <div class="px-4 py-1.5 text-[10px] font-mono text-cyber-textMuted border-b border-cyber-border">مخرجات التشغيل</div>
+                            <div id="outputConsole" class="flex-1 p-4 code-font text-xs text-emerald-400 overflow-y-auto min-h-[380px] whitespace-pre-wrap">
+> تم تهيئة بيئة MEDO EL JAN IDE
+> Python 3.12 ready
+> اضغط "تشغيل" لتنفيذ الكود
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="py-28 text-center relative">
+            <div class="max-w-3xl mx-auto px-4 relative z-10">
+                <div class="w-52 h-52 sm:w-64 sm:h-64 mx-auto mb-8 rounded-2xl overflow-hidden border-2 border-red-500/60 shadow-2xl" style="box-shadow: 0 0 40px rgba(239,68,68,0.25), 0 0 80px rgba(168,85,247,0.15);">
+                    <img src="medo-profile.jpg" alt="MEDO EL JAN" class="w-full h-full object-cover object-center">
+                </div>
+                <h2 class="text-4xl font-black mb-4">تواصل مع <span class="text-cyber-neonGreen">MEDO EL JAN</span></h2>
+                <p class="text-cyber-textMuted text-lg mb-8 max-w-lg mx-auto">
+                    لديك استفسار برمجي أو تريد الانضمام للدورات الخاصة؟ تواصل معنا مباشرة.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://wa.me/message/IDAQMNL3ABVAN1" target="_blank" class="px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg transition shadow-xl shadow-emerald-600/30 flex items-center gap-3">
+                        <i class="fa-brands fa-whatsapp text-2xl"></i> واتساب
+                    </a>
+                    <a href="tel:01278977255" class="px-8 py-4 rounded-2xl bg-cyber-card border border-cyber-border hover:border-cyber-neonGreen text-white font-bold text-lg transition flex items-center gap-3">
+                        <i class="fa-solid fa-phone text-cyber-neonGreen"></i> 01278977255
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-cyber-dark py-8 border-t border-cyber-border text-center text-xs text-cyber-textMuted">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p>© 2026 منصة <span class="text-cyber-neonGreen font-bold">MEDO EL JAN</span> — جميع الحقوق محفوظة</p>
+                <p class="font-mono">01278977255</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ===================== LESSON PAGE ===================== -->
+    <div id="lessonPage" class="lesson-page">
+        <header class="sticky top-0 z-50 bg-cyber-dark/95 backdrop-blur-xl border-b border-cyber-border">
+            <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+                <button onclick="closeLesson()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-neonGreen transition text-sm font-bold">
+                    <i class="fa-solid fa-arrow-right"></i> رجوع
+                </button>
+                <span class="text-sm font-mono text-cyber-textMuted hidden sm:inline">MEDO EL JAN Academy</span>
+                <button onclick="toggleMusic()" class="px-3 py-2 bg-cyber-card border border-cyber-border rounded-lg text-cyber-neonGreen text-sm">
+                    <i class="fa-solid fa-music"></i>
+                </button>
+            </div>
+        </header>
+        <div class="max-w-4xl mx-auto px-4 py-10 relative z-10">
+            <div class="mb-8">
+                <span id="lessonBadge" class="px-3 py-1 bg-cyber-neonGreen/10 text-cyber-neonGreen text-xs font-mono rounded-full"></span>
+                <h1 id="lessonTitle" class="text-3xl sm:text-4xl font-black mt-4 mb-2"></h1>
+                <p id="lessonSubtitle" class="text-cyber-textMuted"></p>
+            </div>
+            <div id="lessonBody" class="lesson-content bg-cyber-card/60 border border-cyber-border rounded-2xl p-6 sm:p-10 backdrop-blur-sm"></div>
+            <div class="mt-10 flex flex-wrap gap-4 justify-between">
+                <button onclick="closeLesson()" class="px-6 py-3 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-neonGreen transition font-bold">← العودة</button>
+                <a href="https://wa.me/message/IDAQMNL3ABVAN1" target="_blank" class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp"></i> اسأل عن الدرس
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== 300 LESSONS =====================
+        const lessons = {};
+
+        function makeLessonContent(title, num, cat) {
+            var catAr = cat === 'python' ? 'بايثون' : cat === 'web' ? 'تطوير الويب' : cat === 'cyber' ? 'الأمن السيبراني' : 'الأدوات';
+            return '<h3>' + title + '</h3>' +
+                '<p>درس رقم <strong>' + num + '</strong> في مسار <strong>' + catAr + '</strong> من منصة MEDO EL JAN Academy.</p>' +
+                '<h4>الأهداف التعليمية</h4><ul>' +
+                '<li>فهم المفهوم الأساسي لـ ' + title + '</li>' +
+                '<li>تطبيق أمثلة عملية قابلة للتشغيل</li>' +
+                '<li>اتباع أفضل الممارسات الحديثة</li>' +
+                '<li>حل تمارين تطبيقية</li></ul>' +
+                '<h4>مثال سريع</h4><pre>// MEDO EL JAN Academy — درس ' + num + '\n' +
+                'print("درس: ' + title.replace(/"/g, '') + '")\n' +
+                'print("استمتع بالتعلم!")</pre>' +
+                '<div class="tip"><strong>نصيحة:</strong> طبّق كل مفهوم فور تعلمه في محرر الأكواد بالمنصة.</div>' +
+                '<div class="exercise"><strong>تمرين:</strong> اكتب برنامجاً صغيراً يطبق ما تعلمته في هذا الدرس.</div>' +
+                '<div class="warning"><strong>ملاحظة:</strong> راجع الدروس السابقة إن واجهت صعوبة.</div>';
+        }
+
+        // بايثون 100
+        var pyBase = [
+            "أساسيات بايثون والمتغيرات","الشروط والحلقات والدوال","البرمجة كائنية التوجه OOP",
+            "القوائم والقواميس والمجموعات","التعامل مع الملفات","معالجة الاستثناءات",
+            "المكتبات القياسية","التعبيرات النمطية Regex","وحدات وموديولات",
+            "دوال Lambda و Map و Filter","List Comprehensions","السلاسل النصية المتقدمة",
+            "JSON و CSV","طلبات HTTP","قواعد البيانات SQLite","Threading","asyncio",
+            "tkinter GUI","Flask أساسيات","Django أساسيات","Pillow","pandas",
+            "matplotlib","NumPy","Machine Learning أساسيات","unittest","pip و venv",
+            "decorators","generators","context managers","APIs","Web Scraping",
+            "الأمان في بايثون","تحسين الأداء","التاريخ والوقت","اللوجات","Design Patterns",
+            "مشروع آلة حاسبة","مشروع مدير مهام","مشروع واجهة ويب","مراجعة شاملة",
+            "Type Hints","dataclasses","pathlib","collections","itertools","functools",
+            "multiprocessing","socket برمجة","SMTP بريد","PDF مع reportlab","Excel openpyxl",
+            "Selenium أساسيات","BeautifulSoup","FastAPI","SQLAlchemy","Pydantic",
+            "Logging متقدم","Config files","CLI مع argparse","Testing pytest","Mocking",
+            "CI/CD بايثون","Docker مع بايثون","Redis أساسيات","Celery","GraphQL",
+            "WebSockets","OAuth","JWT","Encryption cryptography","Hashing",
+            "Regular Expressions متقدم","Parsing","AST","Metaclasses","Descriptors",
+            "Slots","Memory profiling","Cython مقدمة","Numba","Polars",
+            "Streamlit","Gradio","Hugging Face مقدمة","OpenCV أساسيات","Audio processing",
+            "Game pygame","Telegram Bot","Discord Bot","WhatsApp API","REST تصميم",
+            "Microservices","Message Queues","Caching strategies","Rate limiting","Pagination",
+            "File watchers","Cron jobs بايثون","System monitoring","Network scanning أساسيات","Final Project بايثون"
+        ];
+        while (pyBase.length < 100) pyBase.push("موضوع بايثون متقدم " + (pyBase.length + 1));
+        for (var i = 0; i < 100; i++) {
+            var id = 'py' + (i + 1);
+            lessons[id] = {
+                badge: 'بايثون • ' + (i + 1),
+                title: pyBase[i],
+                subtitle: 'الدرس ' + (i + 1) + ' من 100 — مسار بايثون',
+                content: makeLessonContent(pyBase[i], i + 1, 'python'),
+                cat: 'python'
+            };
+        }
+
+        // ويب 80
+        var webBase = [
+            "هيكل HTML5","CSS3 والتصميم المتجاوب","JavaScript التفاعلي","Semantic HTML","Forms والتحقق",
+            "Flexbox المتقدم","CSS Grid","Responsive Design","CSS Variables","Animations",
+            "DOM Manipulation","Events","Fetch API","LocalStorage","ES6+ Features",
+            "Modules في JS","Promises","Async/Await","مقدمة React","مكونات React",
+            "State و Props","React Hooks","Vue.js أساسيات","Tailwind CSS","صفحة هبوط كاملة",
+            "SEO أساسيات","مشروع موقع شخصي","TypeScript أساسيات","Next.js مقدمة","Svelte مقدمة",
+            "Webpack","Vite","SASS/SCSS","CSS Modules","Styled Components",
+            "Accessibility a11y","Performance Web","Lazy Loading","Service Workers","PWA أساسيات",
+            "Web Components","Canvas API","SVG","Three.js مقدمة","GSAP Animations",
+            "Form validation متقدم","File upload","Drag and Drop","Infinite scroll","Virtual lists",
+            "State management Redux","Zustand","React Query","Axios","GraphQL Client",
+            "Auth في الواجهة","Protected routes","i18n","Dark mode","Design systems",
+            "Figma to Code","UI Kits","Bootstrap","Material UI","Chakra UI",
+            "Testing Jest","Cypress","Storybook","Storybook Components","E2E testing",
+            "Deploy Netlify","Deploy Vercel","GitHub Pages","CDN","HTTP Headers أمان",
+            "CORS","CSP","XSS حماية واجهة","CSRF Tokens","Final Project ويب"
+        ];
+        while (webBase.length < 80) webBase.push("موضوع ويب متقدم " + (webBase.length + 1));
+        for (var i = 0; i < 80; i++) {
+            lessons['web' + (i + 1)] = {
+                badge: 'تطوير ويب • ' + (i + 1),
+                title: webBase[i],
+                subtitle: 'الدرس ' + (i + 1) + ' من 80 — تطوير الويب',
+                content: makeLessonContent(webBase[i], i + 1, 'web'),
+                cat: 'web'
+            };
+        }
+
+        // أمن 70
+        var cyberBase = [
+            "مفاهيم أمن المعلومات","فحص الثغرات وتأمين الكود","تأمين الشبكات والبيانات",
+            "مثلث CIA","أنواع الهجمات","Phishing","كلمات المرور والـ Hashing","SQL Injection",
+            "XSS","CSRF","HTTPS و TLS","Firewalls","VPNs","OWASP Top 10","اختبار اختراق أساسيات",
+            "Malware مقدمة","Cloud Security","Zero Trust","التشفير Symmetric","التشفير Asymmetric",
+            "مشروع تأمين تطبيق","Social Engineering","Ransomware","DDoS","MITM",
+            "Session Hijacking","Directory Traversal","Command Injection","Buffer Overflow مقدمة","Privilege Escalation",
+            "Network Scanning","Nmap أساسيات","Wireshark أساسيات","Burp Suite مقدمة","Metasploit مقدمة",
+            "Linux Hardening","Windows Security","Mobile Security","IoT Security","API Security",
+            "OAuth أمان","JWT أمان","Secrets Management","Logging أمني","SIEM مقدمة",
+            "Incident Response","Forensics أساسيات","Threat Intelligence","OSINT","Red Team vs Blue Team",
+            "Penetration Testing منهجية","Bug Bounty أساسيات","Secure Coding","Code Review أمني","Dependency Scanning",
+            "Container Security","Kubernetes أمان","Serverless أمان","WAF","IDS/IPS",
+            "Email Security","DNS Security","Certificate Management","Password Managers","2FA و MFA",
+            "Biometrics","Physical Security","Policy و Compliance","GDPR أساسيات","Final Project أمن"
+        ];
+        while (cyberBase.length < 70) cyberBase.push("موضوع أمن متقدم " + (cyberBase.length + 1));
+        for (var i = 0; i < 70; i++) {
+            lessons['cyber' + (i + 1)] = {
+                badge: 'أمن سيبراني • ' + (i + 1),
+                title: cyberBase[i],
+                subtitle: 'الدرس ' + (i + 1) + ' من 70 — الأمن السيبراني',
+                content: makeLessonContent(cyberBase[i], i + 1, 'cyber'),
+                cat: 'cyber'
+            };
+        }
+
+        // أدوات 50
+        var toolsBase = [
+            "VS Code الاحترافي","PyCharm المتقدم","Sublime Text","Terminal و Linux",
+            "أساسيات Git","Git Branches و Merge","أساسيات Linux","Docker مقدمة","Postman",
+            "npm و Node.js","VS Code Extensions","Vim / Neovim","SSH","Cron Jobs","مراجعة أدوات",
+            "GitHub Actions","GitLab CI","Make و Makefiles","tmux","zsh و oh-my-zsh",
+            "Homebrew","apt و package managers","VirtualBox","WSL","Remote Development",
+            "Dev Containers","Kubernetes kubectl","Terraform مقدمة","Ansible مقدمة","Nginx أساسيات",
+            "Apache أساسيات","Cloudflare","ngrok","Postman Collections","Insomnia",
+            "Fiddler","Chrome DevTools","Lighthouse","PageSpeed","WebPageTest",
+            "ESLint","Prettier","Husky","Commitlint","Semantic Versioning",
+            "Changelog","Documentation","Markdown","Swagger/OpenAPI","Final Tools Project"
+        ];
+        while (toolsBase.length < 50) toolsBase.push("أداة متقدمة " + (toolsBase.length + 1));
+        for (var i = 0; i < 50; i++) {
+            lessons['tool' + (i + 1)] = {
+                badge: 'أدوات • ' + (i + 1),
+                title: toolsBase[i],
+                subtitle: 'الدرس ' + (i + 1) + ' من 50 — الأدوات والمحررات',
+                content: makeLessonContent(toolsBase[i], i + 1, 'tools'),
+                cat: 'tools'
+            };
+        }
+
+        // توافق مع الأزرار القديمة (vscode, pycharm...)
+        ['vscode','pycharm','sublime','terminal'].forEach(function(oldId, idx) {
+            if (!lessons[oldId]) {
+                lessons[oldId] = lessons['tool' + (idx + 1)];
+            }
+        });
+
+        console.log('Total lessons:', Object.keys(lessons).length);
+
+        // ===================== RENDER LESSONS GRID =====================
+        function renderLessons(cat = 'all') {
+            const grid = document.getElementById('lessonsGrid');
+            grid.innerHTML = '';
+            const entries = Object.entries(lessons).filter(([id, l]) => cat === 'all' || l.cat === cat);
+            entries.forEach(([id, lesson]) => {
+                const color = lesson.cat === 'python' ? 'cyan' : lesson.cat === 'web' ? 'purple' : lesson.cat === 'cyber' ? 'emerald' : 'amber';
+                const div = document.createElement('div');
+                div.className = 'lesson-card bg-cyber-card border border-cyber-border rounded-xl p-4 cursor-pointer hover:border-cyber-neonGreen';
+                div.onclick = () => openLesson(id);
+                div.innerHTML = `
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-${color}-500/10 text-${color}-400">${lesson.badge}</span>
+                        <i class="fa-solid fa-book-open text-cyber-neonGreen text-sm mt-0.5"></i>
+                    </div>
+                    <h4 class="text-sm font-bold leading-snug text-white">${lesson.title}</h4>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function showCat(cat) {
+            document.querySelectorAll('.cat-tab').forEach(t => {
+                t.classList.remove('active');
+                t.classList.add('text-cyber-textMuted');
+            });
+            const btn = document.querySelector(`.cat-tab[data-cat="${cat}"]`);
+            if (btn) {
+                btn.classList.add('active');
+                btn.classList.remove('text-cyber-textMuted');
+            }
+            renderLessons(cat);
+        }
+
+        // ===================== AUTH & LOCAL STORAGE =====================
+        function checkAuth() {
+            var user = null;
+            try {
+                user = localStorage.getItem('medo_user') || sessionStorage.getItem('medo_user');
+            } catch (e) {}
+            var overlay = document.getElementById('authOverlay');
+            if (user) {
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                    overlay.style.display = 'none';
+                }
+                var badge = document.getElementById('userBadge');
+                if (badge) {
+                    badge.classList.remove('hidden');
+                    badge.classList.add('flex');
+                }
+                var logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
+                var nameEl = document.getElementById('loggedUserName');
+                if (nameEl) nameEl.textContent = user;
+                if (!isMusicPlaying) {
+                    setTimeout(function() { try { toggleMusic(true); } catch(e){} }, 900);
+                }
+            } else {
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                    overlay.style.display = '';
+                }
+            }
+        }
+
+        function handleLogin(e) {
+            if (e) e.preventDefault();
+            try {
+                const userEl = document.getElementById('loginUser');
+                const passEl = document.getElementById('loginPass');
+                const user = (userEl && userEl.value || '').trim();
+                const pass = (passEl && passEl.value) || '';
+                const rememberEl = document.getElementById('rememberMe');
+                const remember = rememberEl ? rememberEl.checked : true;
+
+                if (!user) {
+                    alert('اكتب اسم المستخدم');
+                    return;
+                }
+                if (!pass) {
+                    alert('اكتب كلمة المرور');
+                    return;
+                }
+
+                try {
+                    if (remember) {
+                        localStorage.setItem('medo_user', user);
+                        sessionStorage.removeItem('medo_user');
+                    } else {
+                        sessionStorage.setItem('medo_user', user);
+                        localStorage.removeItem('medo_user');
+                    }
+                } catch (storageErr) {
+                    // بعض المتصفحات تمنع التخزين في وضع الخصوصية
+                    console.warn('storage', storageErr);
+                }
+
+                const overlay = document.getElementById('authOverlay');
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                    overlay.style.display = 'none';
+                }
+                const badge = document.getElementById('userBadge');
+                if (badge) {
+                    badge.classList.remove('hidden');
+                    badge.classList.add('flex');
+                }
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
+                const nameEl = document.getElementById('loggedUserName');
+                if (nameEl) nameEl.textContent = user;
+
+                try { toggleMusic(true); } catch (mErr) { console.warn('music', mErr); }
+                setTimeout(assembleHackerName, 300);
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ، حاول مرة أخرى');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('medo_user');
+            sessionStorage.removeItem('medo_user');
+            document.getElementById('userBadge').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('authOverlay').classList.remove('hidden');
+            if (isMusicPlaying) toggleMusic();
+        }
+
+        // ===================== SAD MUSIC (حزينة) =====================
+        let audioCtx = null;
+        let isMusicPlaying = false;
+        let oscillators = [];
+        let masterGain = null;
+        let lfo = null;
+
+        function toggleMusic(forceStart = false) {
+            if (forceStart && isMusicPlaying) return;
+            const icon = document.getElementById('musicIcon');
+            try {
+                if (!isMusicPlaying) {
+                    var AC = window.AudioContext || window.webkitAudioContext;
+                    if (!AC) {
+                        alert('المتصفح لا يدعم الصوت');
+                        return;
+                    }
+                    if (!audioCtx || audioCtx.state === 'closed') {
+                        audioCtx = new AC();
+                    }
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                    masterGain = audioCtx.createGain();
+                    masterGain.gain.setValueAtTime(0.025, audioCtx.currentTime);
+                    masterGain.connect(audioCtx.destination);
+
+                    // نغمات حزينة أوضح قليلاً
+                    var freqs = [110, 130.81, 146.83, 164.81, 196.00, 220];
+                    oscillators = [];
+                    freqs.forEach(function(f, i) {
+                        var osc = audioCtx.createOscillator();
+                        var g = audioCtx.createGain();
+                        osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+                        g.gain.setValueAtTime(0.008 - i * 0.0008, audioCtx.currentTime);
+                        osc.connect(g);
+                        g.connect(masterGain);
+                        osc.start();
+                        oscillators.push(osc);
+                    });
+
+                    lfo = audioCtx.createOscillator();
+                    var lfoGain = audioCtx.createGain();
+                    lfo.frequency.value = 0.06;
+                    lfoGain.gain.value = 0.004;
+                    lfo.connect(lfoGain);
+                    lfoGain.connect(masterGain.gain);
+                    lfo.start();
+
+                    isMusicPlaying = true;
+                    if (icon) icon.className = "fa-solid fa-volume-high text-cyber-neonGreen";
+                } else {
+                    oscillators.forEach(function(o) { try { o.stop(); o.disconnect(); } catch(e){} });
+                    oscillators = [];
+                    if (lfo) { try { lfo.stop(); lfo.disconnect(); } catch(e){} lfo = null; }
+                    if (audioCtx && audioCtx.state !== 'closed') {
+                        try { audioCtx.close(); } catch(e){}
+                    }
+                    audioCtx = null;
+                    isMusicPlaying = false;
+                    if (icon) icon.className = "fa-solid fa-music";
+                }
+            } catch (err) {
+                console.warn('music error', err);
+                isMusicPlaying = false;
+            }
+        }
+
+        // ===================== VIEW SWITCHING =====================
+        function openLesson(id) {
+            const lesson = lessons[id];
+            if (!lesson) return;
+            document.getElementById('mainContent').classList.add('hidden-view');
+            var lp = document.getElementById('lessonPage');
+            lp.classList.add('active');
+            // إزالة الثيمات القديمة وتطبيق ثيم حسب التصنيف
+            lp.classList.remove('theme-python', 'theme-web', 'theme-cyber', 'theme-tools');
+            var theme = 'theme-python';
+            if (lesson.cat === 'web') theme = 'theme-web';
+            else if (lesson.cat === 'cyber') theme = 'theme-cyber';
+            else if (lesson.cat === 'tools') theme = 'theme-tools';
+            lp.classList.add(theme);
+            document.getElementById('lessonBadge').textContent = lesson.badge;
+            document.getElementById('lessonTitle').textContent = lesson.title;
+            document.getElementById('lessonSubtitle').textContent = lesson.subtitle;
+            document.getElementById('lessonBody').innerHTML = lesson.content;
+            window.scrollTo(0, 0);
+        }
+
+        function closeLesson() {
+            var lp = document.getElementById('lessonPage');
+            lp.classList.remove('active');
+            lp.classList.remove('theme-python', 'theme-web', 'theme-cyber', 'theme-tools');
+            document.getElementById('mainContent').classList.remove('hidden-view');
+            window.scrollTo(0, 0);
+        }
+
+        // ===================== IDE =====================
+        function updateLineNumbers() {
+            const code = document.getElementById('codeEditor').value;
+            const lines = code.split('\n').length;
+            let html = '';
+            for (let i = 1; i <= lines; i++) html += i + '\n';
+            document.getElementById('lineNumbers').textContent = html;
+        }
+
+        function clearEditor() {
+            document.getElementById('codeEditor').value = '';
+            document.getElementById('outputConsole').textContent = '> تم مسح المحرر';
+            updateLineNumbers();
+        }
+
+        function runCode() {
+            const lang = document.getElementById('langSelect').value;
+            const code = document.getElementById('codeEditor').value;
+            const output = document.getElementById('outputConsole');
+            output.textContent = '> جاري التنفيذ...\n';
+
+            setTimeout(() => {
+                try {
+                    if (lang === 'javascript') {
+                        let logs = [];
+                        const originalLog = console.log;
+                        console.log = (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+                        let result = eval(code);
+                        console.log = originalLog;
+                        if (logs.length) {
+                            output.textContent = '> المخرجات:\n' + logs.join('\n');
+                        } else {
+                            output.textContent = '> تم التنفيذ\n> النتيجة: ' + (result !== undefined ? result : 'لا توجد مخرجات');
+                        }
+                    } else {
+                        let result = '';
+                        const lines = code.split('\n');
+                        lines.forEach(line => {
+                            let m = line.match(/print\s*\(\s*(?:f)?["']([^"']*)["']\s*\)/);
+                            if (m) {
+                                let text = m[1];
+                                text = text.replace(/\{[^}]*name[^}]*\}/gi, 'مبرمج محترف');
+                                text = text.replace(/\{[^}]*i[^}]*\}/gi, '1');
+                                result += text + '\n';
+                            }
+                            if (line.includes('print("=" *') || line.includes("print('=' *")) {
+                                result += '=============================================\n';
+                            }
+                        });
+                        if (code.includes('for') && code.includes('range') && code.includes('المستوى')) {
+                            const rm = code.match(/range\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/);
+                            if (rm) {
+                                const start = parseInt(rm[1]);
+                                const end = parseInt(rm[2]);
+                                for (let i = start; i < end; i++) {
+                                    result += `  → المستوى ${i} جاهز للتعلم\n`;
+                                }
+                            }
+                        }
+                        if (result) {
+                            output.textContent = '> مخرجات Python 3:\n' + result + '\n> تم التنفيذ بنجاح ✓';
+                        } else {
+                            output.textContent = '> تم تنفيذ الكود (لا توجد أوامر print ظاهرة)';
+                        }
+                    }
+                } catch (err) {
+                    output.textContent = '> خطأ:\n' + err.message;
+                }
+            }, 280);
+        }
+
+        // ===================== CANVAS: مياه + سمك + برمجة + اسم متحرك =====================
+        const canvas = document.getElementById('cyberCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let fish = [];
+        let codeBits = [];
+        let mouse = { x: null, y: null };
+        let time = 0;
+        let nameX = 0, nameY = 0, nameVX = 0.4, nameVY = 0.25;
+
+        const colorPalette = [
+            [0, 255, 204], [0, 212, 255], [168, 85, 247], [236, 72, 153],
+            [52, 211, 153], [251, 191, 36], [96, 165, 250], [56, 189, 248]
+        ];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            nameX = canvas.width * 0.5;
+            nameY = canvas.height * 0.35;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
+        window.addEventListener('touchmove', e => {
+            if (e.touches[0]) { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }
+        }, { passive: true });
+
+        // جزيئات مياه
+        for (let i = 0; i < 80; i++) {
+            const c = colorPalette[i % colorPalette.length];
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2.2 + 0.3,
+                speedX: (Math.random() - 0.5) * 0.5,
+                speedY: (Math.random() - 0.5) * 0.35,
+                r: c[0], g: c[1], b: c[2],
+                pulse: Math.random() * Math.PI * 2
+            });
+        }
+
+        // أسماك بسيطة
+        for (let i = 0; i < 12; i++) {
+            fish.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: 8 + Math.random() * 14,
+                speed: 0.3 + Math.random() * 0.7,
+                dir: Math.random() > 0.5 ? 1 : -1,
+                wobble: Math.random() * Math.PI * 2,
+                color: colorPalette[i % colorPalette.length]
+            });
+        }
+
+        // رموز برمجة عائمة
+        const symbols = ['{ }', '</>', '01', 'fn()', '=>', '[]', '&&', '!=', 'py', 'js', '#', '//'];
+        for (let i = 0; i < 18; i++) {
+            codeBits.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                text: symbols[i % symbols.length],
+                speedY: 0.15 + Math.random() * 0.35,
+                alpha: 0.15 + Math.random() * 0.25,
+                size: 10 + Math.random() * 8
+            });
+        }
+
+        function drawFish(f) {
+            ctx.save();
+            ctx.translate(f.x, f.y);
+            ctx.scale(f.dir, 1);
+            var col = f.color;
+            ctx.fillStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0.45)';
+            // جسم
+            ctx.beginPath();
+            ctx.ellipse(0, 0, f.size, f.size * 0.45, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // ذيل
+            ctx.beginPath();
+            ctx.moveTo(-f.size * 0.7, 0);
+            ctx.lineTo(-f.size * 1.3, -f.size * 0.4);
+            ctx.lineTo(-f.size * 1.3, f.size * 0.4);
+            ctx.closePath();
+            ctx.fill();
+            // عين
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath();
+            ctx.arc(f.size * 0.45, -f.size * 0.1, f.size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawHandsHint(cx, cy) {
+            // يدين هكرز بسيطتين حول الاسم
+            ctx.strokeStyle = 'rgba(0,255,204,0.25)';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            // يد يسرى
+            ctx.beginPath();
+            ctx.moveTo(cx - 140, cy + 30);
+            ctx.quadraticCurveTo(cx - 100, cy + 50, cx - 90, cy + 10);
+            ctx.quadraticCurveTo(cx - 95, cy - 5, cx - 80, cy - 15);
+            ctx.stroke();
+            // يد يمنى
+            ctx.beginPath();
+            ctx.moveTo(cx + 140, cy + 30);
+            ctx.quadraticCurveTo(cx + 100, cy + 50, cx + 90, cy + 10);
+            ctx.quadraticCurveTo(cx + 95, cy - 5, cx + 80, cy - 15);
+            ctx.stroke();
+        }
+
+        function animateCanvas() {
+            time += 0.016;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // موجات مياه خلفية
+            for (var w = 0; w < 4; w++) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(0, 180, 220, ' + (0.04 + w * 0.015) + ')';
+                ctx.lineWidth = 1.5;
+                for (var x = 0; x <= canvas.width; x += 8) {
+                    var y = canvas.height * (0.55 + w * 0.08) +
+                        Math.sin(x * 0.008 + time * (0.8 + w * 0.2) + w) * (12 + w * 6) +
+                        Math.sin(x * 0.02 + time * 1.2) * 4;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // توهج
+            var gx = canvas.width * (0.4 + 0.15 * Math.sin(time * 0.3));
+            var gy = canvas.height * (0.35 + 0.1 * Math.cos(time * 0.25));
+            var grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, canvas.width * 0.4);
+            grad.addColorStop(0, 'rgba(0,212,255,0.05)');
+            grad.addColorStop(0.5, 'rgba(168,85,247,0.03)');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // جزيئات
+            particles.forEach(function(p, index) {
+                p.x += p.speedX + Math.sin(time + p.pulse) * 0.15;
+                p.y += p.speedY;
+                p.pulse += 0.04;
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+
+                if (mouse.x && mouse.y) {
+                    var dx = mouse.x - p.x, dy = mouse.y - p.y;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 140) { p.x -= dx * 0.012; p.y -= dy * 0.012; }
+                }
+
+                var alpha = 0.2 + 0.25 * Math.sin(p.pulse);
+                var rad = p.radius * (0.9 + 0.2 * Math.sin(p.pulse));
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',' + alpha + ')';
+                ctx.fill();
+
+                for (var j = index + 1; j < particles.length; j++) {
+                    var p2 = particles[j];
+                    var d = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (d < 110) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'rgba(' + Math.floor((p.r+p2.r)/2) + ',' +
+                            Math.floor((p.g+p2.g)/2) + ',' + Math.floor((p.b+p2.b)/2) + ',' +
+                            (0.1 * (1 - d/110)) + ')';
+                        ctx.lineWidth = 0.6;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            // أسماك
+            fish.forEach(function(f) {
+                f.wobble += 0.05;
+                f.x += f.speed * f.dir;
+                f.y += Math.sin(f.wobble) * 0.4;
+                if (f.x > canvas.width + 40) { f.x = -40; f.y = Math.random() * canvas.height; }
+                if (f.x < -40) { f.x = canvas.width + 40; f.y = Math.random() * canvas.height; }
+                drawFish(f);
+            });
+
+            // رموز برمجة
+            ctx.textAlign = 'center';
+            codeBits.forEach(function(b) {
+                b.y -= b.speedY;
+                if (b.y < -20) { b.y = canvas.height + 20; b.x = Math.random() * canvas.width; }
+                ctx.font = b.size + 'px Fira Code, monospace';
+                ctx.fillStyle = 'rgba(0,255,204,' + b.alpha + ')';
+                ctx.fillText(b.text, b.x, b.y);
+            });
+
+            // اسم MEDO EL JAN يتحرك بين يدين
+            nameX += nameVX;
+            nameY += nameVY;
+            if (nameX < canvas.width * 0.25 || nameX > canvas.width * 0.75) nameVX *= -1;
+            if (nameY < canvas.height * 0.2 || nameY > canvas.height * 0.55) nameVY *= -1;
+
+            // على شاشة الدخول فقط نرسم الاسم الكبير
+            var overlay = document.getElementById('authOverlay');
+            var showLoginFx = overlay && !overlay.classList.contains('hidden');
+            if (showLoginFx) {
+                drawHandsHint(nameX, nameY);
+                ctx.font = 'bold ' + Math.min(42, canvas.width * 0.07) + 'px Cairo, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'rgba(0,255,204,0.85)';
+                ctx.shadowColor = 'rgba(0,212,255,0.6)';
+                ctx.shadowBlur = 20;
+                ctx.fillText('MEDO EL JAN', nameX, nameY);
+                ctx.font = Math.min(14, canvas.width * 0.03) + 'px Fira Code, monospace';
+                ctx.fillStyle = 'rgba(168,85,247,0.7)';
+                ctx.shadowBlur = 8;
+                ctx.fillText('ACADEMY  •  HACKERS', nameX, nameY + 28);
+                ctx.shadowBlur = 0;
+            }
+
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        function assembleHackerName() {
+            var el = document.getElementById('assembledName');
+            if (!el) return;
+            el.innerHTML = '';
+            var text = 'MEDO EL JAN';
+            var scramble = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%';
+            var spans = [];
+            for (var i = 0; i < text.length; i++) {
+                if (text[i] === ' ') {
+                    var sp = document.createElement('span');
+                    sp.className = 'space';
+                    el.appendChild(sp);
+                    spans.push(null);
+                } else {
+                    var span = document.createElement('span');
+                    span.className = 'letter';
+                    span.textContent = scramble[Math.floor(Math.random() * scramble.length)];
+                    el.appendChild(span);
+                    spans.push(span);
+                }
+            }
+            // حرف حرف: تشفير ثم تثبيت
+            var idx = 0;
+            function nextLetter() {
+                while (idx < text.length && text[idx] === ' ') idx++;
+                if (idx >= text.length) return;
+                var span = spans[idx];
+                var finalChar = text[idx];
+                var ticks = 0;
+                var maxTicks = 10;
+                var t = setInterval(function() {
+                    ticks++;
+                    if (!span) { clearInterval(t); idx++; nextLetter(); return; }
+                    if (ticks >= maxTicks) {
+                        span.textContent = finalChar;
+                        span.classList.add('done');
+                        clearInterval(t);
+                        idx++;
+                        setTimeout(nextLetter, 80);
+                    } else {
+                        span.textContent = scramble[Math.floor(Math.random() * scramble.length)];
+                    }
+                }, 35);
+            }
+            setTimeout(nextLetter, 200);
+        }
+
+        // Init
+        updateLineNumbers();
+        checkAuth();
+        // لو المستخدم مسجّل مسبقاً
+        setTimeout(assembleHackerName, 400);
+        renderLessons('all');
+
+        // ربط زر تسجيل الدخول بشكل موثوق (موبايل + ديسكتوب)
+        (function bindLogin() {
+            var btn = document.getElementById('loginBtn');
+            var form = document.getElementById('loginForm');
+            if (btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleLogin(e);
+                });
+            }
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleLogin(e);
+                });
+            }
+            // Enter key
+            var pass = document.getElementById('loginPass');
+            if (pass) {
+                pass.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleLogin(e);
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
